@@ -1,68 +1,74 @@
 document.addEventListener('DOMContentLoaded', function() {
-    let descriptionEditor, coverLetterEditor;
+    // Create temporary textareas that won't be replaced by CKEditor
+    // but will be used to store CKEditor content for form submission
+    const descriptionTextarea = document.querySelector('#description');
+    const coverLetterTextarea = document.querySelector('#cover_letter');
     
-    // Initialize CKEditor for job description
-    if (document.querySelector('#description')) {
-        ClassicEditor
-            .create(document.querySelector('#description'))
-            .then(editor => {
-                descriptionEditor = editor;
-            })
-            .catch(error => {
-                console.error('Description editor error:', error);
-            });
-    }
-    
-    // Initialize CKEditor for cover letter
-    if (document.querySelector('#cover_letter')) {
-        ClassicEditor
-            .create(document.querySelector('#cover_letter'))
-            .then(editor => {
-                coverLetterEditor = editor;
-            })
-            .catch(error => {
-                console.error('Cover letter editor error:', error);
-            });
-    }
-    
-    // Add form submission handler to capture CKEditor content
-    const jobForm = document.getElementById('job-form');
-    if (jobForm) {
-        // Add event listener for the submit button directly
-        const submitButton = jobForm.querySelector('input[type="submit"]');
-        if (submitButton) {
-            submitButton.addEventListener('click', function(e) {
-                e.preventDefault(); // Prevent the default submit
+    // Only proceed if we have these elements
+    if (descriptionTextarea && coverLetterTextarea) {
+        // Create hidden fields to store the CKEditor content
+        const descriptionHidden = document.createElement('textarea');
+        descriptionHidden.id = 'description_hidden';
+        descriptionHidden.name = 'description';
+        descriptionHidden.style.display = 'none';
+        descriptionHidden.value = descriptionTextarea.value;
+        
+        const coverLetterHidden = document.createElement('textarea');
+        coverLetterHidden.id = 'cover_letter_hidden';
+        coverLetterHidden.name = 'cover_letter';
+        coverLetterHidden.style.display = 'none';
+        coverLetterHidden.value = coverLetterTextarea.value;
+        
+        // Change original textareas so they don't get submitted
+        descriptionTextarea.name = 'description_display';
+        coverLetterTextarea.name = 'cover_letter_display';
+        
+        // Add hidden fields to form
+        const jobForm = document.getElementById('job-form');
+        if (jobForm) {
+            jobForm.appendChild(descriptionHidden);
+            jobForm.appendChild(coverLetterHidden);
+            
+            // Initialize CKEditor
+            // Make editors globally accessible
+            window.descriptionEditor = null;
+            window.coverLetterEditor = null;
+            
+            ClassicEditor
+                .create(descriptionTextarea)
+                .then(editor => {
+                    window.descriptionEditor = editor;
+                    // Update hidden field when content changes
+                    editor.model.document.on('change:data', () => {
+                        descriptionHidden.value = editor.getData();
+                        console.log('Description updated:', descriptionHidden.value.substring(0, 50));
+                    });
+                })
+                .catch(error => {
+                    console.error('Description editor error:', error);
+                });
+            
+            ClassicEditor
+                .create(coverLetterTextarea)
+                .then(editor => {
+                    window.coverLetterEditor = editor;
+                    // Update hidden field when content changes
+                    editor.model.document.on('change:data', () => {
+                        coverLetterHidden.value = editor.getData();
+                        console.log('Cover letter updated:', coverLetterHidden.value.substring(0, 50));
+                    });
+                })
+                .catch(error => {
+                    console.error('Cover letter editor error:', error);
+                });
                 
-                console.log('Save button clicked');
-                
-                // Update hidden inputs with CKEditor content before form submission
-                if (descriptionEditor) {
-                    document.getElementById('description').value = descriptionEditor.getData();
-                }
-                if (coverLetterEditor) {
-                    document.getElementById('cover_letter').value = coverLetterEditor.getData();
-                }
-                
-                console.log('Submitting form...');
-                jobForm.submit(); // Manually submit the form
+            // Add form submit handler to log what's being submitted
+            jobForm.addEventListener('submit', function(e) {
+                console.log('Form submitted');
+                console.log('Description value:', descriptionHidden.value.substring(0, 50));
+                console.log('Cover letter value:', coverLetterHidden.value.substring(0, 50));
             });
         }
-        
-        // Also keep the form submission handler as a backup
-        jobForm.addEventListener('submit', function(e) {
-            console.log('Form submission event');
-            // This is a backup in case the button click doesn't work
-            if (!e.defaultPrevented) {
-                // Update hidden inputs with CKEditor content before form submission
-                if (descriptionEditor) {
-                    document.getElementById('description').value = descriptionEditor.getData();
-                }
-                if (coverLetterEditor) {
-                    document.getElementById('cover_letter').value = coverLetterEditor.getData();
-                }
-            }
-        });
     }
 
     // Search functionality
@@ -163,14 +169,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('apply_date').value = data.apply_date || '';
                     
                     // Update CKEditor content
-                    if (descriptionEditor) {
-                        descriptionEditor.setData(data.description || '');
+                    if (window.descriptionEditor) {
+                        window.descriptionEditor.setData(data.description || '');
+                        // Also update hidden field
+                        document.getElementById('description_hidden').value = data.description || '';
                     } else {
                         document.getElementById('description').value = data.description || '';
                     }
                     
-                    if (coverLetterEditor && data.cover_letter) {
-                        coverLetterEditor.setData(data.cover_letter || '');
+                    if (window.coverLetterEditor && data.cover_letter) {
+                        window.coverLetterEditor.setData(data.cover_letter || '');
+                        // Also update hidden field
+                        document.getElementById('cover_letter_hidden').value = data.cover_letter || '';
                     } else if (data.cover_letter) {
                         document.getElementById('cover_letter').value = data.cover_letter || '';
                     }
