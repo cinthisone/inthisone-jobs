@@ -6,8 +6,10 @@ window.coverLetterEditor = null;
 function processAIJobPosting() {
     console.log('processAIJobPosting function called');
     
-    // Get the job posting text
+    // Get the job posting text and resume ID
     var jobPostingTextarea = document.getElementById('job_posting');
+    var resumeSelect = document.getElementById('resume_id');
+    
     if (!jobPostingTextarea) {
         console.error('Could not find job_posting textarea');
         alert('Error: Could not find job posting field');
@@ -15,10 +17,21 @@ function processAIJobPosting() {
     }
     
     var jobPostingText = jobPostingTextarea.value.trim();
+    var resumeId = resumeSelect ? resumeSelect.value : null;
+    
+    // Convert resume ID to number if it exists and isn't "None"
+    if (resumeId && resumeId !== "0") {
+        resumeId = parseInt(resumeId);
+    } else {
+        resumeId = null;
+    }
+    
     if (!jobPostingText) {
         alert('Please paste a job posting first');
         return false;
     }
+    
+    console.log('Using resume ID:', resumeId);
     
     // Show processing state
     var submitBtn = document.getElementById('ai-assist-button');
@@ -122,8 +135,11 @@ function processAIJobPosting() {
         }
     };
     
-    // Send the request
-    xhr.send(JSON.stringify({ text: jobPostingText }));
+    // Send the request with resume_id if available
+    xhr.send(JSON.stringify({ 
+        text: jobPostingText,
+        resume_id: resumeId
+    }));
     return false;
 }
 
