@@ -80,28 +80,53 @@ def add_job():
         print("POST request received to add_job")
         print(f"Form data: {request.form}")
         
-        # Set default date if not provided
-        if not form.apply_date.data:
-            form.apply_date.data = date.today()
+        # Get the form data directly from request.form 
+        title = request.form.get('title')
+        company = request.form.get('company')
+        apply_date_str = request.form.get('apply_date')
+        description = request.form.get('description')
+        cover_letter = request.form.get('cover_letter')
         
-        # Debug form validation
-        if not form.validate():
-            print(f"Form validation errors: {form.errors}")
-            for field, errors in form.errors.items():
-                for error in errors:
-                    print(f"Error in {getattr(form, field).label.text}: {error}")
-                    flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
+        # Validate form fields manually
+        errors = []
+        if not title:
+            errors.append('Job Title is required')
+        if not company:
+            errors.append('Company is required')
+        if not description:
+            errors.append('Job Description is required')
+            
+        if errors:
+            for error in errors:
+                flash(error, 'danger')
+            # Populate form with submitted data
+            form.title.data = title
+            form.company.data = company
+            form.description.data = description
+            form.cover_letter.data = cover_letter
+            if apply_date_str:
+                try:
+                    form.apply_date.data = datetime.strptime(apply_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    form.apply_date.data = date.today()
             return render_template('job_form.html', form=form, title="Add New Job Application")
         
         # Form is valid
-        print("Form is valid, creating job")
+        print("Form data is valid, creating job")
         try:
+            # Parse the apply_date or use today's date
+            try:
+                apply_date = datetime.strptime(apply_date_str, '%Y-%m-%d').date() if apply_date_str else date.today()
+            except ValueError:
+                apply_date = date.today()
+                
+            # Create and save the job
             job = Job(
-                title=form.title.data,
-                company=form.company.data,
-                apply_date=form.apply_date.data,
-                description=form.description.data,
-                cover_letter=form.cover_letter.data
+                title=title,
+                company=company,
+                apply_date=apply_date,
+                description=description,
+                cover_letter=cover_letter
             )
             db.session.add(job)
             db.session.commit()
@@ -196,6 +221,13 @@ def ai_assist():
         if job_posting:
             print("Processing AI job posting extraction")
             result = parse_job_posting(job_posting)
+            
+            # When handling AJAX request
+            if request.headers.get('Accept') == 'application/json' or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                print("Returning JSON response")
+                return jsonify(result)
+                
+            # When handling normal form submit
             if 'error' in result and result['error']:
                 flash(f"Error parsing job posting: {result['error']}", 'danger')
                 return render_template('job_form.html', form=job_form, ai_form=form, title="AI-Assisted Job Entry")

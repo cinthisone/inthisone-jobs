@@ -15,7 +15,7 @@
             <div class="card-body">
                 <p class="text-muted">Paste a job posting below and our AI will automatically extract the key information for you.</p>
                 
-                <form id="ai-job-form" method="POST" action="{{ url_for('api_parse_job') }}">
+                <form id="ai-job-form" method="POST" action="{{ url_for('ai_assist') }}" enctype="multipart/form-data">
                     <div class="mb-3">
                         {{ ai_form.job_posting(class="form-control", rows=8, placeholder="Paste full job posting here...") }}
                     </div>

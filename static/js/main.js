@@ -82,33 +82,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
         
-        // Replace with simpler approach - manual form submission after data sync
-        const saveButton = document.querySelector('input[type="submit"]');
-        if (saveButton) {
-            saveButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                console.log('Save button clicked');
-                
-                // Ensure editors are synced
-                syncEditors();
-                
-                console.log('Form data synchronized');
-                console.log('Form action:', jobForm.action);
-                
-                // Log form data for debugging
-                const formData = new FormData(jobForm);
-                console.log('Form contains these fields:');
-                for (let pair of formData.entries()) {
-                    console.log(pair[0] + ': ' + pair[1]);
-                }
-                
-                // Submit the form directly
-                console.log('Submitting form directly');
-                setTimeout(() => {
-                    jobForm.submit();
-                }, 100);
-            });
+        // Add a pre-submit event to the form to ensure CKEditor content is synced
+        jobForm.addEventListener('submit', function(e) {
+            // Don't prevent the default behavior - we want normal form submission
+            console.log('Form submit event triggered');
+            
+            // Ensure editors are synced before submission
+            syncEditors();
+            
+            console.log('Form data synchronized for submission');
+            console.log('Form action:', jobForm.action);
+            
+            // Log form data for debugging
+            const formData = new FormData(jobForm);
+            console.log('Form contains these fields:');
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+            
+            // Let the form submit naturally
+            console.log('Continuing with normal form submission');
+        });
         }
     }
 
@@ -190,13 +184,14 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = true;
             submitBtn.value = 'Processing...';
             
+            // Submit form directly to the AI assist route
+            const formData = new FormData();
+            formData.append('job_posting', jobPostingText);
+            
             // Call the API endpoint to parse the job posting
-            fetch('/api/parse-job', {
+            fetch('/jobs/ai-assist', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ text: jobPostingText }),
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
