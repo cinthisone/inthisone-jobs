@@ -1,21 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize TinyMCE for job description
+    // Initialize CKEditor for job description
     if (document.querySelector('#description')) {
-        tinymce.init({
-            selector: '#description',
-            height: 300,
-            menubar: false,
-            plugins: [
-                'advlist autolink lists link image charmap print preview anchor',
-                'searchreplace visualblocks code fullscreen',
-                'insertdatetime media table paste code help wordcount'
-            ],
-            toolbar: 'undo redo | formatselect | ' +
-                'bold italic backcolor | alignleft aligncenter ' +
-                'alignright alignjustify | bullist numlist outdent indent | ' +
-                'removeformat | help',
-            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
-        });
+        ClassicEditor
+            .create(document.querySelector('#description'))
+            .catch(error => {
+                console.error(error);
+            });
     }
 
     // Search functionality
@@ -115,9 +105,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('company').value = data.company || '';
                     document.getElementById('apply_date').value = data.apply_date || '';
                     
-                    // Set TinyMCE content
-                    if (tinymce.get('description')) {
-                        tinymce.get('description').setContent(data.description || '');
+                    // Set CKEditor content
+                    const editorInstance = document.querySelector('.ck-editor__editable');
+                    if (editorInstance && editorInstance.ckeditorInstance) {
+                        editorInstance.ckeditorInstance.setData(data.description || '');
                     } else {
                         document.getElementById('description').value = data.description || '';
                     }
