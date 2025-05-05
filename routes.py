@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, session, flash, jsonify
-from datetime import datetime
+from datetime import datetime, date
 import json
 from werkzeug.security import generate_password_hash
 
@@ -75,17 +75,27 @@ def job_search():
 def add_job():
     form = JobForm()
     
-    if form.validate_on_submit():
-        job = Job(
-            title=form.title.data,
-            company=form.company.data,
-            apply_date=form.apply_date.data,
-            description=form.description.data
-        )
-        db.session.add(job)
-        db.session.commit()
-        flash('Job application added successfully!', 'success')
-        return redirect(url_for('dashboard'))
+    if request.method == 'POST':
+        # Set default date if not provided
+        if not form.apply_date.data:
+            form.apply_date.data = date.today()
+            
+        # Validate form
+        if form.validate():
+            job = Job(
+                title=form.title.data,
+                company=form.company.data,
+                apply_date=form.apply_date.data,
+                description=form.description.data
+            )
+            db.session.add(job)
+            db.session.commit()
+            flash('Job application added successfully!', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
     
     return render_template('job_form.html', form=form, title="Add New Job Application")
 
@@ -95,14 +105,24 @@ def edit_job(job_id):
     job = Job.query.get_or_404(job_id)
     form = JobForm(obj=job)
     
-    if form.validate_on_submit():
-        job.title = form.title.data
-        job.company = form.company.data
-        job.apply_date = form.apply_date.data
-        job.description = form.description.data
-        db.session.commit()
-        flash('Job application updated successfully!', 'success')
-        return redirect(url_for('dashboard'))
+    if request.method == 'POST':
+        # Set default date if not provided
+        if not form.apply_date.data:
+            form.apply_date.data = date.today()
+            
+        # Validate form
+        if form.validate():
+            job.title = form.title.data
+            job.company = form.company.data
+            job.apply_date = form.apply_date.data
+            job.description = form.description.data
+            db.session.commit()
+            flash('Job application updated successfully!', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
     
     return render_template('job_form.html', form=form, title="Edit Job Application")
 

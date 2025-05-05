@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, DateField, TextAreaField, SubmitField
 from wtforms.validators import DataRequired, Length
+from datetime import date
 
 class LoginForm(FlaskForm):
     """Form for user login"""
@@ -11,7 +12,7 @@ class JobForm(FlaskForm):
     """Form for adding/editing job applications"""
     title = StringField('Job Title', validators=[DataRequired(), Length(max=255)])
     company = StringField('Company', validators=[DataRequired(), Length(max=255)])
-    apply_date = DateField('Application Date', validators=[DataRequired()])
+    apply_date = DateField('Application Date', validators=[DataRequired()], default=date.today)
     description = TextAreaField('Job Description', validators=[DataRequired()])
     submit = SubmitField('Save Job')
 
