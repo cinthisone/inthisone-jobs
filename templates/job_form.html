@@ -16,6 +16,8 @@
                 <p class="text-muted">Paste a job posting below and our AI will automatically extract the key information for you.</p>
                 
                 <div id="ai-job-form">
+                    <!-- Add CSRF token field specifically for the AI form -->
+                    <input type="hidden" id="ai_csrf_token" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <textarea id="job_posting" name="job_posting" class="form-control" rows="8" placeholder="Paste full job posting here..."></textarea>
                     </div>

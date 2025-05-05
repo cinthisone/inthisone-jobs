@@ -33,6 +33,12 @@ function processAIJobPosting() {
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     
+    // Get CSRF token from the AI form
+    const csrfToken = document.getElementById('ai_csrf_token');
+    if (csrfToken) {
+        xhr.setRequestHeader('X-CSRFToken', csrfToken.value);
+    }
+    
     xhr.onload = function() {
         if (xhr.status === 200) {
             try {
