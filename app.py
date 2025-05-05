@@ -31,6 +31,13 @@ app.config["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY", "")
 db.init_app(app)
 csrf = CSRFProtect(app)
 
+# Exempt API endpoints from CSRF protection
+@app.route('/api/parse-job', methods=['POST'])
+def csrf_exempt_api_parse_job():
+    pass  # Actual implementation is in routes.py
+    
+csrf.exempt(csrf_exempt_api_parse_job)
+
 with app.app_context():
     # Import models to ensure they're registered with SQLAlchemy
     import models  # noqa: F401

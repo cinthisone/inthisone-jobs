@@ -241,13 +241,17 @@ def ai_assist():
 @app.route('/api/parse-job', methods=['POST'])
 @login_required
 def api_parse_job():
-    data = request.json
-    job_posting = data.get('text', '')
-    if not job_posting:
-        return jsonify({'error': 'No job posting provided'}), 400
-    
-    result = parse_job_posting(job_posting)
-    return jsonify(result)
+    try:
+        data = request.json
+        job_posting = data.get('text', '')
+        if not job_posting:
+            return jsonify({'error': 'No job posting provided'}), 400
+        
+        result = parse_job_posting(job_posting)
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error in API parse job: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/setup-password', methods=['GET', 'POST'])
 def setup_password():
