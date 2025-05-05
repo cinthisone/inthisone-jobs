@@ -189,60 +189,11 @@ def ai_assist():
     form = AIJobForm()
     job_form = JobForm()
     
-    # Handle the form submission directly
-    if request.method == 'POST' and 'submit' in request.form:
-        print("AI-Assist form is being submitted as a job")
-        print(f"Form data: {request.form}")
-        
-        # Check if we're processing the job form submission (after AI extraction)
-        # Process and save the job directly
-        job = Job(
-            title=request.form.get('title', ''),
-            company=request.form.get('company', ''),
-            apply_date=format_date(request.form.get('apply_date', datetime.now().strftime('%Y-%m-%d'))),
-            description=request.form.get('description', ''),
-            cover_letter=request.form.get('cover_letter', '')
-        )
-        
-        try:
-            db.session.add(job)
-            db.session.commit()
-            print("Job saved successfully from AI-Assist")
-            flash('Job application added successfully!', 'success')
-            return redirect(url_for('dashboard'))
-        except Exception as e:
-            print(f"Error saving job from AI-Assist: {str(e)}")
-            db.session.rollback()
-            flash(f'Error saving job: {str(e)}', 'danger')
-            
-    # Handle the AI parsing request
-    elif request.method == 'POST' and 'job_posting' in request.form:
-        job_posting = request.form.get('job_posting')
-        if job_posting:
-            print("Processing AI job posting extraction")
-            result = parse_job_posting(job_posting)
-            
-            # When handling AJAX request
-            if request.headers.get('Accept') == 'application/json' or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                print("Returning JSON response")
-                return jsonify(result)
-                
-            # When handling normal form submit
-            if 'error' in result and result['error']:
-                flash(f"Error parsing job posting: {result['error']}", 'danger')
-                return render_template('job_form.html', form=job_form, ai_form=form, title="AI-Assisted Job Entry")
-            
-            # Fill the form with the parsed data
-            job_form.title.data = result.get('title', '')
-            job_form.company.data = result.get('company', '')
-            job_form.apply_date.data = format_date(result.get('apply_date', datetime.now().strftime('%Y-%m-%d')))
-            job_form.description.data = result.get('description', '')
-            job_form.cover_letter.data = result.get('cover_letter', '')
-            
-            flash('Job posting parsed successfully! Review and submit the form.', 'success')
-            return render_template('job_form.html', form=job_form, ai_form=form, title="AI-Assisted Job Entry", 
-                                prefilled=True)
+    if request.method == 'GET':
+        # Just render the template on GET requests
+        return render_template('job_form.html', form=job_form, ai_form=form, title="AI-Assisted Job Entry")
     
+    # For POST requests, don't do anything - we'll only use AJAX for this
     return render_template('job_form.html', form=job_form, ai_form=form, title="AI-Assisted Job Entry")
 
 @app.route('/api/parse-job', methods=['POST'])
