@@ -168,104 +168,147 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // AI-assisted job entry
+    // AI-assisted job entry - fixed version
     const aiForm = document.getElementById('ai-job-form');
     if (aiForm) {
         aiForm.addEventListener('submit', function(e) {
+            // Prevent the default form submission
             e.preventDefault();
             
-            const jobPostingText = document.getElementById('job_posting').value.trim();
+            // Get the job posting text
+            const jobPostingTextarea = document.getElementById('job_posting');
+            if (!jobPostingTextarea) {
+                console.error('Could not find job_posting textarea');
+                return;
+            }
+            
+            const jobPostingText = jobPostingTextarea.value.trim();
             if (!jobPostingText) {
                 showAlert('Please paste a job posting first', 'warning');
                 return;
             }
             
+            // Show processing state
             const submitBtn = aiForm.querySelector('input[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.value = 'Processing...';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.value = 'Processing...';
+            }
             
-            // Submit form directly to the AI assist route
+            console.log('Processing job posting...');
+            
+            // Create a new form data object
             const formData = new FormData();
             formData.append('job_posting', jobPostingText);
             
-            // Call the API endpoint to parse the job posting
+            // Add a header to request JSON response
+            const headers = {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            };
+            
+            // Send the request to the AI assist endpoint
             fetch('/jobs/ai-assist', {
                 method: 'POST',
+                headers: headers,
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(function(data) {
                 if (data.error) {
-                    showAlert(`Error: ${data.error}`, 'danger');
-                } else {
-                    // Populate the form fields with the parsed data
-                    document.getElementById('title').value = data.title || '';
-                    document.getElementById('company').value = data.company || '';
-                    document.getElementById('apply_date').value = data.apply_date || '';
-                    
-                    // Destroy existing editor instances if they exist
-                    if (window.descriptionEditor) {
-                        window.descriptionEditor.destroy();
-                        window.descriptionEditor = null;
-                    }
-                    
-                    if (window.coverLetterEditor) {
-                        window.coverLetterEditor.destroy();
-                        window.coverLetterEditor = null;
-                    }
-                    
-                    // Set textarea values directly before reinitializing
-                    document.getElementById('description').value = data.description || '';
-                    document.getElementById('cover_letter').value = data.cover_letter || '';
-                    
-                    // Reinitialize the editors with new content
-                    setTimeout(() => {
-                        // Initialize the CKEditor instances again
+                    showAlert('Error: ' + data.error, 'danger');
+                    return;
+                }
+                
+                console.log('Successfully parsed job posting');
+                console.log(data);
+                
+                // Fill in the form fields with the parsed data
+                const titleField = document.getElementById('title');
+                const companyField = document.getElementById('company');
+                const applyDateField = document.getElementById('apply_date');
+                const descriptionField = document.getElementById('description');
+                const coverLetterField = document.getElementById('cover_letter');
+                
+                if (titleField) titleField.value = data.title || '';
+                if (companyField) companyField.value = data.company || '';
+                if (applyDateField) applyDateField.value = data.apply_date || '';
+                
+                // Clean up existing CKEditor instances if they exist
+                if (window.descriptionEditor) {
+                    window.descriptionEditor.destroy();
+                    window.descriptionEditor = null;
+                }
+                
+                if (window.coverLetterEditor) {
+                    window.coverLetterEditor.destroy();
+                    window.coverLetterEditor = null;
+                }
+                
+                // Set textarea values directly
+                if (descriptionField) descriptionField.value = data.description || '';
+                if (coverLetterField) coverLetterField.value = data.cover_letter || '';
+                
+                // Wait a moment then reinitialize the editors
+                setTimeout(function() {
+                    // Re-initialize the description editor
+                    if (descriptionField) {
                         ClassicEditor
-                            .create(document.getElementById('description'))
-                            .then(editor => {
+                            .create(descriptionField)
+                            .then(function(editor) {
                                 window.descriptionEditor = editor;
                                 console.log('Description editor re-initialized with content');
                                 
                                 // Add change listener to sync with textarea
-                                editor.model.document.on('change:data', () => {
-                                    document.getElementById('description').value = editor.getData();
-                                    console.log('Description automatically synced');
+                                editor.model.document.on('change:data', function() {
+                                    descriptionField.value = editor.getData();
                                 });
                             })
-                            .catch(error => {
+                            .catch(function(error) {
                                 console.error('Error reinitializing description editor:', error);
                             });
-                            
+                    }
+                    
+                    // Re-initialize the cover letter editor
+                    if (coverLetterField) {
                         ClassicEditor
-                            .create(document.getElementById('cover_letter'))
-                            .then(editor => {
+                            .create(coverLetterField)
+                            .then(function(editor) {
                                 window.coverLetterEditor = editor;
                                 console.log('Cover letter editor re-initialized with content');
                                 
                                 // Add change listener to sync with textarea
-                                editor.model.document.on('change:data', () => {
-                                    document.getElementById('cover_letter').value = editor.getData();
-                                    console.log('Cover letter automatically synced');
+                                editor.model.document.on('change:data', function() {
+                                    coverLetterField.value = editor.getData();
                                 });
                             })
-                            .catch(error => {
+                            .catch(function(error) {
                                 console.error('Error reinitializing cover letter editor:', error);
                             });
-                            
-                        showAlert('Job posting parsed successfully! Review and submit the form.', 'success');
-                        // Scroll to the form
-                        document.getElementById('job-form').scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
-                }
+                    }
+                    
+                    showAlert('Job posting parsed successfully! Review and submit the form.', 'success');
+                    
+                    // Scroll to the job form
+                    const jobForm = document.getElementById('job-form');
+                    if (jobForm) jobForm.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
             })
-            .catch(error => {
+            .catch(function(error) {
                 console.error('Error parsing job posting:', error);
                 showAlert('Failed to parse job posting. Please try again.', 'danger');
             })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.value = 'Add using AI';
+            .finally(function() {
+                // Re-enable the submit button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.value = 'Add using AI';
+                }
             });
         });
     }
