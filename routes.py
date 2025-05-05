@@ -186,3 +186,26 @@ def setup_password():
             return redirect(url_for('login'))
     
     return render_template('setup_password.html')
+
+@app.route('/reset-password/<token>', methods=['GET'])
+def reset_password(token):
+    # This is a special route for demonstration purposes
+    # In a real application, you would use a secure token system
+    if token == 'special-reset-token':
+        # Set a specific password
+        admin = User.query.filter_by(username='admin').first()
+        if admin:
+            admin.password_hash = generate_password_hash('Erockeast123!@#')
+            db.session.commit()
+            flash('Password has been reset to your requested password. You can now log in.', 'success')
+        else:
+            # Create admin if it doesn't exist
+            admin = User(username='admin', password_hash=generate_password_hash('Erockeast123!@#'))
+            db.session.add(admin)
+            db.session.commit()
+            flash('Admin user created with your requested password. You can now log in.', 'success')
+        
+        return redirect(url_for('login'))
+    else:
+        flash('Invalid reset token', 'danger')
+        return redirect(url_for('login'))
