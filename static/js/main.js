@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // No results found
                 const emptyRow = document.createElement('tr');
                 emptyRow.innerHTML = `
-                    <td colspan="4" class="text-center py-4">
+                    <td colspan="5" class="text-center py-4">
                         <div class="text-muted">No job applications found</div>
                     </td>
                 `;
@@ -296,6 +296,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>${job.title}</td>
                         <td>${job.company}</td>
                         <td>${job.apply_date}</td>
+                        <td>
+                            ${job.resume ? `<span class="badge bg-info">${job.resume.title}</span>` : 
+                            '<span class="text-muted small">None</span>'}
+                        </td>
                         <td class="text-right">
                             <a href="/jobs/view/${job.id}" class="btn btn-sm btn-outline-primary">View</a>
                             <a href="/jobs/edit/${job.id}" class="btn btn-sm btn-outline-secondary">Edit</a>
