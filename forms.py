@@ -28,6 +28,8 @@ class JobForm(FlaskForm):
     cover_letter = TextAreaField('Cover Letter')
     pay_range = StringField('Pay Range', validators=[Length(max=100)], 
                            description="Optional salary or pay range information (e.g., '$75,000-$90,000/year')")
+    job_url = StringField('Job URL', validators=[Length(max=500)],
+                         description="Optional link to the job posting online")
     resume_id = SelectField('Select Resume', coerce=int, validators=[])
     submit = SubmitField('Save Job')
 

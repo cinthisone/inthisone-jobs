@@ -45,7 +45,7 @@ def parse_job_posting(text, resume_content=None):
             f"{prompt_resume}"
             "The cover letter should be concise, no more than 3 paragraphs total. "
             "Include contact information at the top of the cover letter. "
-            "Return JSON in this format: {'title': '...', 'company': '...', 'pay_range': '...', 'description': '...', 'cover_letter': '...'}. "
+            "Return JSON in this format: {'title': '...', 'company': '...', 'pay_range': '...', 'job_url': '...', 'description': '...', 'cover_letter': '...'}. "
             "Make sure to format both the description and cover letter with proper HTML paragraphs for readability. "
             "If no pay range is mentioned in the job posting, include an empty string for the pay_range field.\n\n"
             "IMPORTANT: The title and company fields MUST be non-empty strings. If you can't extract them "
@@ -82,5 +82,6 @@ def parse_job_posting(text, resume_content=None):
             "description": "Error extracting job details. Please try again.",
             "cover_letter": "",
             "pay_range": "",
+            "job_url": "",
             "apply_date": datetime.now().strftime("%Y-%m-%d")
         }

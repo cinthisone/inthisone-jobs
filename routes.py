@@ -92,6 +92,7 @@ def add_job():
         description = request.form.get('description')
         cover_letter = request.form.get('cover_letter')
         pay_range = request.form.get('pay_range')
+        job_url = request.form.get('job_url')
         resume_id_str = request.form.get('resume_id')
         
         # Convert resume_id to int if provided
@@ -154,6 +155,7 @@ def add_job():
                 description=description,
                 cover_letter=cover_letter,
                 pay_range=pay_range,
+                job_url=job_url,
                 resume_id=resume_id
             )
             db.session.add(job)
@@ -209,6 +211,7 @@ def edit_job(job_id):
             job.description = form.description.data
             job.cover_letter = form.cover_letter.data
             job.pay_range = form.pay_range.data
+            job.job_url = form.job_url.data
             job.resume_id = resume_id
             db.session.commit()
             flash('Job application updated successfully!', 'success')
