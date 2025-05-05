@@ -1,10 +1,46 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Simplify everything - let's just use the regular textareas
-    // and add a submit button handler
-    
     // Get our form elements
     const jobForm = document.getElementById('job-form');
     const manualSubmitBtn = document.getElementById('manual-submit-btn');
+    
+    // Initialize CKEditor for description and cover letter fields
+    // Make them available globally in this scope
+    window.descriptionEditor = null;
+    window.coverLetterEditor = null;
+    
+    // Initialize CKEditor instances
+    const initializeEditors = function() {
+        // Only initialize if the elements exist and haven't been initialized yet
+        const descriptionField = document.getElementById('description');
+        const coverLetterField = document.getElementById('cover_letter');
+        
+        if (descriptionField && !window.descriptionEditor) {
+            ClassicEditor
+                .create(descriptionField)
+                .then(editor => {
+                    window.descriptionEditor = editor;
+                    console.log('Description editor initialized');
+                })
+                .catch(error => {
+                    console.error('Error initializing description editor:', error);
+                });
+        }
+        
+        if (coverLetterField && !window.coverLetterEditor) {
+            ClassicEditor
+                .create(coverLetterField)
+                .then(editor => {
+                    window.coverLetterEditor = editor;
+                    console.log('Cover letter editor initialized');
+                })
+                .catch(error => {
+                    console.error('Error initializing cover letter editor:', error);
+                });
+        }
+    };
+    
+    // Initialize editors on page load
+    initializeEditors();
     
     if (jobForm && manualSubmitBtn) {
         // Attach click handler to manually submit the form
@@ -16,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
             manualSubmitBtn.innerHTML = 'Saving...';
             
             try {
-                // 2. Submit the form directly without using CKEditor
+                // 2. Submit the form directly
                 jobForm.submit();
                 console.log('Form submitted manually');
             } catch (error) {
@@ -124,14 +160,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('company').value = data.company || '';
                     document.getElementById('apply_date').value = data.apply_date || '';
                     
-                    // Simply set textarea values directly
+                    // Set textarea values directly
                     document.getElementById('description').value = data.description || '';
                     document.getElementById('cover_letter').value = data.cover_letter || '';
                     
-                    showAlert('Job posting parsed successfully! Review and submit the form.', 'success');
+                    // Destroy existing editor instances if they exist
+                    if (window.descriptionEditor) {
+                        window.descriptionEditor.destroy();
+                        window.descriptionEditor = null;
+                    }
                     
-                    // Scroll to the form
-                    document.getElementById('job-form').scrollIntoView({ behavior: 'smooth' });
+                    if (window.coverLetterEditor) {
+                        window.coverLetterEditor.destroy();
+                        window.coverLetterEditor = null;
+                    }
+                    
+                    // Reinitialize the editors with new content
+                    setTimeout(() => {
+                        initializeEditors();
+                        showAlert('Job posting parsed successfully! Review and submit the form.', 'success');
+                        // Scroll to the form
+                        document.getElementById('job-form').scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
                 }
             })
             .catch(error => {
