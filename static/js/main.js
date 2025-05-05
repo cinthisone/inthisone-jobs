@@ -302,7 +302,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     form.action = `/jobs/delete/${jobId}`;
                     form.style.display = 'none';
                     
-                    // Add hidden inputs for any required fields
+                    // Add CSRF token if available (get it from any existing form with csrf_token)
+                    const csrfToken = document.querySelector('input[name="csrf_token"]');
+                    if (csrfToken) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrf_token';
+                        csrfInput.value = csrfToken.value;
+                        form.appendChild(csrfInput);
+                    }
+                    
                     document.body.appendChild(form);
                     form.submit();
                 }

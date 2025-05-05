@@ -3,6 +3,10 @@
 {% block title %}Dashboard - Inthisone Jobs{% endblock %}
 
 {% block content %}
+<!-- Hidden form with CSRF token for JavaScript to use -->
+<form id="csrf-form" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
 <div class="row justify-content-center">
     <div class="col-lg-10">
         <div class="card">
@@ -56,13 +60,17 @@
                             {% if jobs %}
                                 {% for job in jobs %}
                                 <tr>
-                                    <td>{{ job.title }}</td>
-                                    <td>{{ job.company }}</td>
+                                    <td>{{ job.title or 'Empty' }}</td>
+                                    <td>{{ job.company or 'Empty' }}</td>
                                     <td data-date="{{ job.apply_date.strftime('%Y-%m-%d') }}">{{ job.apply_date.strftime('%Y-%m-%d') }}</td>
                                     <td class="text-right">
                                         <a href="{{ url_for('view_job', job_id=job.id) }}" class="btn btn-sm btn-outline-primary">View</a>
                                         <a href="{{ url_for('edit_job', job_id=job.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                                         <button class="btn btn-sm btn-outline-danger delete-job" data-id="{{ job.id }}">Delete</button>
+                                        {% if not job.title or not job.company %}
+                                        <a href="{{ url_for('force_delete_job', job_id=job.id) }}" class="btn btn-sm btn-danger" 
+                                          onclick="return confirm('Are you sure you want to force delete this problematic record?')">Force Delete</a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}

@@ -283,3 +283,18 @@ def reset_password(token):
     else:
         flash('Invalid reset token', 'danger')
         return redirect(url_for('login'))
+
+@app.route('/jobs/force-delete/<int:job_id>', methods=['GET'])
+@login_required
+def force_delete_job(job_id):
+    """Special route to force delete problematic job records"""
+    try:
+        # First try direct SQL deletion
+        db.session.execute(text(f"DELETE FROM jobs WHERE id = {job_id}"))
+        db.session.commit()
+        flash(f'Successfully force-deleted job ID {job_id}!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error force-deleting job: {str(e)}', 'danger')
+    
+    return redirect(url_for('dashboard'))
