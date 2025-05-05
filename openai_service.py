@@ -25,7 +25,7 @@ def parse_job_posting(text, resume_content=None):
         
         # Base prompt
         prompt_base = (
-            "Extract the job title, company name, and job description from the following job posting. "
+            "Extract the job title, company name, pay range (if available), and job description from the following job posting. "
             "Then, generate a professional cover letter for this position using this information: "
             "Name: Chan Inthisone, Phone: 781-664-4975, Email: cinthisone@gmail.com. "
         )
@@ -45,8 +45,9 @@ def parse_job_posting(text, resume_content=None):
             f"{prompt_resume}"
             "The cover letter should be concise, no more than 3 paragraphs total. "
             "Include contact information at the top of the cover letter. "
-            "Return JSON in this format: {'title': '...', 'company': '...', 'description': '...', 'cover_letter': '...'}. "
-            "Make sure to format both the description and cover letter with proper HTML paragraphs for readability.\n\n"
+            "Return JSON in this format: {'title': '...', 'company': '...', 'pay_range': '...', 'description': '...', 'cover_letter': '...'}. "
+            "Make sure to format both the description and cover letter with proper HTML paragraphs for readability. "
+            "If no pay range is mentioned in the job posting, include an empty string for the pay_range field.\n\n"
             "IMPORTANT: The title and company fields MUST be non-empty strings. If you can't extract them "
             "with high confidence, use 'Unknown Job Title' and 'Unknown Company' as fallbacks, "
             "but never return empty strings for these fields.\n\n"
@@ -80,5 +81,6 @@ def parse_job_posting(text, resume_content=None):
             "company": "Unknown Company",
             "description": "Error extracting job details. Please try again.",
             "cover_letter": "",
+            "pay_range": "",
             "apply_date": datetime.now().strftime("%Y-%m-%d")
         }

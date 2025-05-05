@@ -26,6 +26,8 @@ class JobForm(FlaskForm):
     apply_date = DateField('Application Date', validators=[DataRequired()], default=date.today)
     description = TextAreaField('Job Description', validators=[DataRequired()])
     cover_letter = TextAreaField('Cover Letter')
+    pay_range = StringField('Pay Range', validators=[Length(max=100)], 
+                           description="Optional salary or pay range information (e.g., '$75,000-$90,000/year')")
     resume_id = SelectField('Select Resume', coerce=int, validators=[])
     submit = SubmitField('Save Job')
 

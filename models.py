@@ -36,6 +36,7 @@ class Job(db.Model):
     apply_date = db.Column(db.Date, nullable=False)
     description = db.Column(db.Text, nullable=False)
     cover_letter = db.Column(db.Text, nullable=True)
+    pay_range = db.Column(db.String(100), nullable=True)
     resume_id = db.Column(db.Integer, db.ForeignKey('resumes.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -49,6 +50,7 @@ class Job(db.Model):
             'apply_date': self.apply_date.strftime('%Y-%m-%d'),
             'description': self.description,
             'cover_letter': self.cover_letter,
+            'pay_range': self.pay_range,
             'resume_id': self.resume_id,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
