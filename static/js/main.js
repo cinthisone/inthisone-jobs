@@ -41,20 +41,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize editors on page load
     initializeEditors();
     
-    // Handle form submission and extract CKEditor content
-    if (jobForm) {
-        jobForm.addEventListener('submit', function(e) {
-            // Prevent the default form submission
+    // Add a click handler to the submit button to update CKEditor content before submission
+    const saveJobBtn = document.getElementById('save-job-btn');
+    if (jobForm && saveJobBtn) {
+        saveJobBtn.addEventListener('click', function(e) {
+            // Prevent the default button behavior
             e.preventDefault();
             
-            console.log('Form submit event intercepted');
+            console.log('Save job button clicked');
             
-            // Get the submit button and disable it
-            const submitBtn = document.getElementById('save-job-btn');
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.value = 'Saving...';
-            }
+            // Disable the button to prevent double-submission
+            saveJobBtn.disabled = true;
+            saveJobBtn.innerHTML = 'Saving...';
             
             try {
                 // Get the data from CKEditor instances if they exist and update form fields
@@ -78,15 +76,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
-                // Now submit the form natively
-                console.log('Submitting form...');
-                this.submit();
-            } catch (error) {
-                console.error('Error during form submission:', error);
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.value = 'Save Job';
+                // Find the hidden submit button and click it
+                const hiddenSubmit = jobForm.querySelector('input[type="submit"]');
+                console.log('Triggering form submission via hidden submit button');
+                if (hiddenSubmit) {
+                    // Manually trigger a click on the hidden submit button
+                    hiddenSubmit.click();
+                } else {
+                    // Fallback to direct form submission
+                    console.log('No hidden submit button found, using direct form submission');
+                    jobForm.submit();
                 }
+            } catch (error) {
+                console.error('Error before form submission:', error);
+                saveJobBtn.disabled = false;
+                saveJobBtn.innerHTML = 'Save Job';
                 alert('Error saving job. Please try again.');
             }
         });
