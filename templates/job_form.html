@@ -81,6 +81,12 @@
                         <div class="form-text">{{ form.pay_range.description }}</div>
                     </div>
                     
+                    <div class="mb-3">
+                        <label for="job_url" class="form-label">Job URL (Optional)</label>
+                        {{ form.job_url(class="form-control") }}
+                        <div class="form-text">{{ form.job_url.description }}</div>
+                    </div>
+                    
                     <div class="mb-4">
                         <label for="resume_id" class="form-label">Attach Resume (Optional)</label>
                         {{ form.resume_id(class="form-select") }}
