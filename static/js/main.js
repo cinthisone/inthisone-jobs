@@ -82,48 +82,34 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
         
-        // Replace the event handler approach with a direct form submission handler
-        jobForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Sync editor data to textareas
-            syncEditors();
-            
-            // Log the form data about to be submitted
-            console.log('Form submission attempted');
-            console.log('Form action:', this.action);
-            console.log('Form data:', new FormData(this));
-            
-            // Create a data object to submit
-            const formData = new FormData(this);
-            
-            // Submit the form with fetch
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'text/html,application/xhtml+xml'
+        // Replace with simpler approach - manual form submission after data sync
+        const saveButton = document.querySelector('input[type="submit"]');
+        if (saveButton) {
+            saveButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                console.log('Save button clicked');
+                
+                // Ensure editors are synced
+                syncEditors();
+                
+                console.log('Form data synchronized');
+                console.log('Form action:', jobForm.action);
+                
+                // Log form data for debugging
+                const formData = new FormData(jobForm);
+                console.log('Form contains these fields:');
+                for (let pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + pair[1]);
                 }
-            })
-            .then(response => {
-                if (response.redirected) {
-                    console.log('Form submitted successfully, redirecting to', response.url);
-                    window.location.href = response.url;
-                } else {
-                    return response.text().then(html => {
-                        // If we got HTML back, it might be form errors
-                        console.log('Form submission returned HTML, updating page');
-                        document.open();
-                        document.write(html);
-                        document.close();
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error submitting form:', error);
-                showAlert('There was an error saving the job. Please try again.', 'danger');
+                
+                // Submit the form directly
+                console.log('Submitting form directly');
+                setTimeout(() => {
+                    jobForm.submit();
+                }, 100);
             });
-        });
+        }
     }
 
     // Search functionality
