@@ -168,150 +168,124 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // AI-assisted job entry - fixed version
-    const aiForm = document.getElementById('ai-job-form');
-    if (aiForm) {
-        aiForm.addEventListener('submit', function(e) {
-            // Prevent the default form submission
-            e.preventDefault();
-            
-            // Get the job posting text
-            const jobPostingTextarea = document.getElementById('job_posting');
-            if (!jobPostingTextarea) {
-                console.error('Could not find job_posting textarea');
-                return;
-            }
-            
-            const jobPostingText = jobPostingTextarea.value.trim();
-            if (!jobPostingText) {
-                showAlert('Please paste a job posting first', 'warning');
-                return;
-            }
-            
-            // Show processing state
-            const submitBtn = aiForm.querySelector('input[type="submit"]');
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.value = 'Processing...';
-            }
-            
-            console.log('Processing job posting...');
-            
-            // Create a new form data object
-            const formData = new FormData();
-            formData.append('job_posting', jobPostingText);
-            
-            // Add a header to request JSON response
-            const headers = {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            };
-            
-            // Send the request to the AI assist endpoint
-            fetch('/jobs/ai-assist', {
-                method: 'POST',
-                headers: headers,
-                body: formData
-            })
-            .then(function(response) {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(function(data) {
+// Simple global function for AI job processing - accessible from inline HTML
+function processAIJobPosting() {
+    console.log('processAIJobPosting function called');
+    
+    // Get the job posting text
+    var jobPostingTextarea = document.getElementById('job_posting');
+    if (!jobPostingTextarea) {
+        console.error('Could not find job_posting textarea');
+        alert('Error: Could not find job posting field');
+        return false;
+    }
+    
+    var jobPostingText = jobPostingTextarea.value.trim();
+    if (!jobPostingText) {
+        alert('Please paste a job posting first');
+        return false;
+    }
+    
+    // Show processing state
+    var submitBtn = document.querySelector('#ai-job-form input[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.value = 'Processing...';
+    }
+    
+    // Create form data to send
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/parse-job', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                
                 if (data.error) {
-                    showAlert('Error: ' + data.error, 'danger');
-                    return;
-                }
-                
-                console.log('Successfully parsed job posting');
-                console.log(data);
-                
-                // Fill in the form fields with the parsed data
-                const titleField = document.getElementById('title');
-                const companyField = document.getElementById('company');
-                const applyDateField = document.getElementById('apply_date');
-                const descriptionField = document.getElementById('description');
-                const coverLetterField = document.getElementById('cover_letter');
-                
-                if (titleField) titleField.value = data.title || '';
-                if (companyField) companyField.value = data.company || '';
-                if (applyDateField) applyDateField.value = data.apply_date || '';
-                
-                // Clean up existing CKEditor instances if they exist
-                if (window.descriptionEditor) {
-                    window.descriptionEditor.destroy();
-                    window.descriptionEditor = null;
-                }
-                
-                if (window.coverLetterEditor) {
-                    window.coverLetterEditor.destroy();
-                    window.coverLetterEditor = null;
-                }
-                
-                // Set textarea values directly
-                if (descriptionField) descriptionField.value = data.description || '';
-                if (coverLetterField) coverLetterField.value = data.cover_letter || '';
-                
-                // Wait a moment then reinitialize the editors
-                setTimeout(function() {
-                    // Re-initialize the description editor
-                    if (descriptionField) {
+                    alert('Error: ' + data.error);
+                } else {
+                    console.log('Successfully parsed job posting:', data);
+                    
+                    // Fill in the form fields
+                    document.getElementById('title').value = data.title || '';
+                    document.getElementById('company').value = data.company || '';
+                    document.getElementById('apply_date').value = data.apply_date || '';
+                    
+                    // Clean up existing editors if they exist
+                    if (window.descriptionEditor) {
+                        window.descriptionEditor.destroy();
+                        window.descriptionEditor = null;
+                    }
+                    
+                    if (window.coverLetterEditor) {
+                        window.coverLetterEditor.destroy();
+                        window.coverLetterEditor = null;
+                    }
+                    
+                    // Set values directly to textareas
+                    document.getElementById('description').value = data.description || '';
+                    document.getElementById('cover_letter').value = data.cover_letter || '';
+                    
+                    // Reinitialize editors with new content
+                    setTimeout(function() {
+                        // Description editor
                         ClassicEditor
-                            .create(descriptionField)
+                            .create(document.getElementById('description'))
                             .then(function(editor) {
                                 window.descriptionEditor = editor;
-                                console.log('Description editor re-initialized with content');
-                                
-                                // Add change listener to sync with textarea
-                                editor.model.document.on('change:data', function() {
-                                    descriptionField.value = editor.getData();
-                                });
                             })
                             .catch(function(error) {
-                                console.error('Error reinitializing description editor:', error);
+                                console.error('Error creating description editor:', error);
                             });
-                    }
-                    
-                    // Re-initialize the cover letter editor
-                    if (coverLetterField) {
+                        
+                        // Cover letter editor
                         ClassicEditor
-                            .create(coverLetterField)
+                            .create(document.getElementById('cover_letter'))
                             .then(function(editor) {
                                 window.coverLetterEditor = editor;
-                                console.log('Cover letter editor re-initialized with content');
-                                
-                                // Add change listener to sync with textarea
-                                editor.model.document.on('change:data', function() {
-                                    coverLetterField.value = editor.getData();
-                                });
                             })
                             .catch(function(error) {
-                                console.error('Error reinitializing cover letter editor:', error);
+                                console.error('Error creating cover letter editor:', error);
                             });
-                    }
-                    
-                    showAlert('Job posting parsed successfully! Review and submit the form.', 'success');
-                    
-                    // Scroll to the job form
-                    const jobForm = document.getElementById('job-form');
-                    if (jobForm) jobForm.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-            })
-            .catch(function(error) {
-                console.error('Error parsing job posting:', error);
-                showAlert('Failed to parse job posting. Please try again.', 'danger');
-            })
-            .finally(function() {
-                // Re-enable the submit button
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.value = 'Add using AI';
+                        
+                        // Show success message and scroll to form
+                        alert('Job posting parsed successfully! Review and submit the form.');
+                        document.getElementById('job-form').scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
                 }
-            });
-        });
-    }
+            } catch (e) {
+                console.error('Error parsing response:', e);
+                alert('Failed to parse response from server.');
+            }
+        } else {
+            console.error('Request failed. Status:', xhr.status);
+            alert('Failed to process job posting. Please try again.');
+        }
+        
+        // Reset button state
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.value = 'Add using AI';
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('Network error occurred');
+        alert('Network error. Please check your connection and try again.');
+        
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.value = 'Add using AI';
+        }
+    };
+    
+    // Send the request
+    xhr.send(JSON.stringify({ text: jobPostingText }));
+    return false;
+}
     
     // Delete job confirmation
     function attachDeleteListeners() {
