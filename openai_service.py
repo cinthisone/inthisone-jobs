@@ -14,18 +14,35 @@ def get_openai_client():
         raise ValueError("OpenAI API key not found in environment variables")
     return OpenAI(api_key=api_key)
 
-def parse_job_posting(text):
+def parse_job_posting(text, resume_content=None):
     """
     Parse job posting text to extract title, company, and description
+    If resume_content is provided, use it to tailor the cover letter
     Returns a dictionary with the extracted information
     """
     try:
         client = get_openai_client()
         
-        prompt = (
+        # Base prompt
+        prompt_base = (
             "Extract the job title, company name, and job description from the following job posting. "
             "Then, generate a professional cover letter for this position using this information: "
             "Name: Chan Inthisone, Phone: 781-664-4975, Email: cinthisone@gmail.com. "
+        )
+        
+        # Add resume content if available
+        if resume_content:
+            prompt_resume = (
+                f"Use the following resume information to tailor the cover letter to highlight relevant skills and experience:\n\n"
+                f"{resume_content}\n\n"
+            )
+        else:
+            prompt_resume = ""
+            
+        # Complete the prompt
+        prompt = (
+            f"{prompt_base}"
+            f"{prompt_resume}"
             "The cover letter should be concise, no more than 3 paragraphs total. "
             "Include contact information at the top of the cover letter. "
             "Return JSON in this format: {'title': '...', 'company': '...', 'description': '...', 'cover_letter': '...'}. "
@@ -33,7 +50,7 @@ def parse_job_posting(text):
             "IMPORTANT: The title and company fields MUST be non-empty strings. If you can't extract them "
             "with high confidence, use 'Unknown Job Title' and 'Unknown Company' as fallbacks, "
             "but never return empty strings for these fields.\n\n"
-            f"{text}"
+            f"JOB POSTING:\n{text}"
         )
         
         response = client.chat.completions.create(

@@ -5,8 +5,8 @@ from werkzeug.security import generate_password_hash
 from sqlalchemy import text
 
 from app import app, db
-from models import Job, User
-from forms import LoginForm, JobForm, AIJobForm
+from models import Job, User, Resume
+from forms import LoginForm, JobForm, AIJobForm, ResumeForm
 from utils import validate_user, format_date, search_jobs, initialize_admin
 from openai_service import parse_job_posting
 
