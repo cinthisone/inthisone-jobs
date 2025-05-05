@@ -27,8 +27,9 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # OpenAI configuration
 app.config["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY", "")
 
-# initialize the app with the extension
+# initialize the app with the extensions
 db.init_app(app)
+csrf = CSRFProtect(app)
 
 with app.app_context():
     # Import models to ensure they're registered with SQLAlchemy

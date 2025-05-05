@@ -296,26 +296,15 @@ document.addEventListener('DOMContentLoaded', function() {
             button.addEventListener('click', function() {
                 const jobId = this.getAttribute('data-id');
                 if (confirm('Are you sure you want to delete this job application?')) {
-                    // Use fetch to make a POST request to delete the job
-                    fetch(`/jobs/delete/${jobId}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            // Reload the page to show the updated job list
-                            window.location.reload();
-                        } else {
-                            alert('Failed to delete job. Please try again.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error deleting job:', error);
-                        alert('An error occurred while deleting the job.');
-                    });
+                    // Create and submit a form with POST method for proper CSRF handling
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/jobs/delete/${jobId}`;
+                    form.style.display = 'none';
+                    
+                    // Add hidden inputs for any required fields
+                    document.body.appendChild(form);
+                    form.submit();
                 }
             });
         });
