@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_head %}
+<!-- Include CKEditor -->
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+<style>
+    .ck-editor__editable_inline {
+        min-height: 300px;
+    }
+    .form-hint {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>{{ title }}</h1>
+            <p class="text-muted">Create or update your resume to use with job applications</p>
+            {% include 'flash_messages.html' %}
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" id="resume-form">
+                        {{ form.csrf_token }}
+                        
+                        <div class="form-group">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control", id="title") }}
+                            {% if form.title.description %}
+                                <div class="form-hint">{{ form.title.description }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.job_title.label(class="form-label") }}
+                            {{ form.job_title(class="form-control", id="job_title") }}
+                            {% if form.job_title.description %}
+                                <div class="form-hint">{{ form.job_title.description }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.content.label(class="form-label") }}
+                            {{ form.content(class="form-control", id="content", rows="15") }}
+                            {% if form.content.description %}
+                                <div class="form-hint">{{ form.content.description }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group d-flex justify-content-between">
+                            <a href="{{ url_for('resumes') }}" class="btn btn-secondary">Cancel</a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize CKEditor for the content field
+    let resumeEditor;
+    
+    ClassicEditor
+        .create(document.getElementById('content'))
+        .then(editor => {
+            resumeEditor = editor;
+            console.log('Resume content editor initialized');
+            
+            // Add change listener to sync with textarea
+            editor.model.document.on('change:data', function() {
+                document.getElementById('content').value = editor.getData();
+                console.log('Resume content automatically synced');
+            });
+        })
+        .catch(error => {
+            console.error('Error initializing resume content editor:', error);
+        });
+    
+    // Add submit event listener to ensure editor content is synced
+    const resumeForm = document.getElementById('resume-form');
+    if (resumeForm) {
+        resumeForm.addEventListener('submit', function(e) {
+            // Ensure editor is synced before submission
+            if (resumeEditor) {
+                try {
+                    const contentData = resumeEditor.getData();
+                    document.getElementById('content').value = contentData;
+                    console.log('Synced resume content with editor data before submission');
+                } catch (error) {
+                    console.error('Error syncing resume content:', error);
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

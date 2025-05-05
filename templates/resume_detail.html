@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ resume.title }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ resume.title }}</h1>
+        <div>
+            <a href="{{ url_for('edit_resume', resume_id=resume.id) }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{{ url_for('resumes') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Resumes
+            </a>
+        </div>
+    </div>
+
+    {% include 'flash_messages.html' %}
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Resume Details</h5>
+                <span class="badge badge-primary">Target: {{ resume.job_title }}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p class="text-muted mb-1">Created</p>
+                    <p>{{ resume.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="text-muted mb-1">Last Updated</p>
+                    <p>{{ resume.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <h5>Content</h5>
+            <div class="resume-content mt-3">
+                {{ resume.content|safe }}
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Related Job Applications</h5>
+        </div>
+        <div class="card-body">
+            {% if resume.jobs %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Job Title</th>
+                                <th>Company</th>
+                                <th>Application Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in resume.jobs %}
+                            <tr>
+                                <td>{{ job.title }}</td>
+                                <td>{{ job.company }}</td>
+                                <td>{{ job.apply_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <a href="{{ url_for('view_job', job_id=job.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-3">
+                    <p class="text-muted mb-0">No jobs using this resume yet</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

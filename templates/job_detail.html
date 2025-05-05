@@ -42,6 +42,29 @@
                 </div>
                 {% endif %}
                 
+                {% if job.resume %}
+                <div class="job-resume mt-4">
+                    <h4>Resume</h4>
+                    <div class="resume-info mb-3">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-info me-2">{{ job.resume.job_title }}</span>
+                            <span>{{ job.resume.title }}</span>
+                            <a href="{{ url_for('view_resume', resume_id=job.resume.id) }}" class="btn btn-sm btn-outline-primary ms-2">
+                                <i class="fas fa-external-link-alt me-1"></i> View Resume
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="job-resume mt-4">
+                    <h4>Resume</h4>
+                    <p class="text-muted">No resume attached to this job application</p>
+                    <a href="{{ url_for('edit_job', job_id=job.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-paperclip me-1"></i> Attach Resume
+                    </a>
+                </div>
+                {% endif %}
+                
                 <div class="mt-4 pt-3 border-top">
                     <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left me-1"></i> Back to Dashboard

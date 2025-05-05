@@ -21,6 +21,18 @@
                     <div class="mb-3">
                         <textarea id="job_posting" name="job_posting" class="form-control" rows="8" placeholder="Paste full job posting here..."></textarea>
                     </div>
+                    <div class="form-group mb-3">
+                        <label for="resume_id" class="form-label">Select Resume for Cover Letter Generation (Optional)</label>
+                        <select id="resume_id" name="resume_id" class="form-select">
+                            <option value="0">None</option>
+                            {% for choice in ai_form.resume_id.choices[1:] %}
+                                <option value="{{ choice[0] }}">{{ choice[1] }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            Selecting a resume will help the AI tailor the cover letter to your skills and experience
+                        </div>
+                    </div>
                     <div class="d-grid">
                         <button type="button" id="ai-assist-button" class="btn btn-primary" onclick="processAIJobPosting()">Add using AI</button>
                     </div>
@@ -58,9 +70,15 @@
                         {{ form.description(class="form-control") }}
                     </div>
                     
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label for="cover_letter" class="form-label">Cover Letter</label>
                         {{ form.cover_letter(class="form-control") }}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="resume_id" class="form-label">Attach Resume (Optional)</label>
+                        {{ form.resume_id(class="form-select") }}
+                        <div class="form-text">Select a resume to attach to this job application</div>
                     </div>
                     
                     <div class="d-flex justify-content-between">

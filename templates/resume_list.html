@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Resumes</h1>
+        <a href="{{ url_for('add_resume') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Resume
+        </a>
+    </div>
+
+    {% include 'flash_messages.html' %}
+
+    <div class="card">
+        <div class="card-body">
+            {% if resumes %}
+                <div class="table-responsive">
+                    <table class="table resume-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="title">Resume Title</th>
+                                <th class="sortable" data-sort="job_title">Target Job Title</th>
+                                <th class="sortable" data-sort="created_at">Created</th>
+                                <th class="sortable" data-sort="updated_at">Last Updated</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resume-table-body">
+                            {% for resume in resumes %}
+                            <tr>
+                                <td>{{ resume.title }}</td>
+                                <td>{{ resume.job_title }}</td>
+                                <td>{{ resume.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ resume.updated_at.strftime('%Y-%m-%d') }}</td>
+                                <td class="text-right">
+                                    <a href="{{ url_for('view_resume', resume_id=resume.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{{ url_for('edit_resume', resume_id=resume.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <button class="btn btn-sm btn-outline-danger delete-resume" data-id="{{ resume.id }}">Delete</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="fas fa-file-alt fa-3x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted">No resumes yet</h4>
+                    <p>Add your first resume to get started</p>
+                    <a href="{{ url_for('add_resume') }}" class="btn btn-primary mt-2">
+                        Add New Resume
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for CSRF protection during delete -->
+<form id="csrf-form" style="display: none;">
+    {{ csrf_token() }}
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Delete resume confirmation
+    const deleteButtons = document.querySelectorAll('.delete-resume');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const resumeId = this.getAttribute('data-id');
+            if (confirm('Are you sure you want to delete this resume? This action cannot be undone.')) {
+                try {
+                    console.log(`Deleting resume ID: ${resumeId}`);
+                    
+                    // Create and submit a form with POST method for proper CSRF handling
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/resumes/delete/${resumeId}`;
+                    form.style.display = 'none';
+                    
+                    // Add CSRF token from our hidden form
+                    const csrfToken = document.querySelector('#csrf-form input[name="csrf_token"]');
+                    if (csrfToken) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrf_token';
+                        csrfInput.value = csrfToken.value;
+                        form.appendChild(csrfInput);
+                    } else {
+                        console.warn('CSRF token not found!');
+                    }
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                } catch (error) {
+                    console.error('Error in delete operation:', error);
+                    alert('Error deleting resume: ' + error.message);
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
