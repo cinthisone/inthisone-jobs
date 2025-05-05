@@ -1,8 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
+    let descriptionEditor, coverLetterEditor;
+    
     // Initialize CKEditor for job description
     if (document.querySelector('#description')) {
         ClassicEditor
             .create(document.querySelector('#description'))
+            .then(editor => {
+                descriptionEditor = editor;
+            })
             .catch(error => {
                 console.error('Description editor error:', error);
             });
@@ -12,9 +17,52 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.querySelector('#cover_letter')) {
         ClassicEditor
             .create(document.querySelector('#cover_letter'))
+            .then(editor => {
+                coverLetterEditor = editor;
+            })
             .catch(error => {
                 console.error('Cover letter editor error:', error);
             });
+    }
+    
+    // Add form submission handler to capture CKEditor content
+    const jobForm = document.getElementById('job-form');
+    if (jobForm) {
+        // Add event listener for the submit button directly
+        const submitButton = jobForm.querySelector('input[type="submit"]');
+        if (submitButton) {
+            submitButton.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent the default submit
+                
+                console.log('Save button clicked');
+                
+                // Update hidden inputs with CKEditor content before form submission
+                if (descriptionEditor) {
+                    document.getElementById('description').value = descriptionEditor.getData();
+                }
+                if (coverLetterEditor) {
+                    document.getElementById('cover_letter').value = coverLetterEditor.getData();
+                }
+                
+                console.log('Submitting form...');
+                jobForm.submit(); // Manually submit the form
+            });
+        }
+        
+        // Also keep the form submission handler as a backup
+        jobForm.addEventListener('submit', function(e) {
+            console.log('Form submission event');
+            // This is a backup in case the button click doesn't work
+            if (!e.defaultPrevented) {
+                // Update hidden inputs with CKEditor content before form submission
+                if (descriptionEditor) {
+                    document.getElementById('description').value = descriptionEditor.getData();
+                }
+                if (coverLetterEditor) {
+                    document.getElementById('cover_letter').value = coverLetterEditor.getData();
+                }
+            }
+        });
     }
 
     // Search functionality
@@ -114,24 +162,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('company').value = data.company || '';
                     document.getElementById('apply_date').value = data.apply_date || '';
                     
-                    // Set description CKEditor content
-                    const descriptionEditors = document.querySelectorAll('.ck-editor__editable');
-                    if (descriptionEditors && descriptionEditors.length > 0) {
-                        // First editor is for description
-                        if (descriptionEditors[0] && descriptionEditors[0].ckeditorInstance) {
-                            descriptionEditors[0].ckeditorInstance.setData(data.description || '');
-                        } else {
-                            document.getElementById('description').value = data.description || '';
-                        }
-                        
-                        // Second editor is for cover letter
-                        if (data.cover_letter && descriptionEditors[1] && descriptionEditors[1].ckeditorInstance) {
-                            descriptionEditors[1].ckeditorInstance.setData(data.cover_letter || '');
-                        } else if (data.cover_letter) {
-                            document.getElementById('cover_letter').value = data.cover_letter || '';
-                        }
+                    // Update CKEditor content
+                    if (descriptionEditor) {
+                        descriptionEditor.setData(data.description || '');
                     } else {
                         document.getElementById('description').value = data.description || '';
+                    }
+                    
+                    if (coverLetterEditor && data.cover_letter) {
+                        coverLetterEditor.setData(data.cover_letter || '');
+                    } else if (data.cover_letter) {
                         document.getElementById('cover_letter').value = data.cover_letter || '';
                     }
                     
