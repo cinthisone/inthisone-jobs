@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.descriptionEditor = null;
     window.coverLetterEditor = null;
     
-    // Initialize CKEditor instances
+    // Initialize CKEditor instances with sync functionality
     const initializeEditors = function() {
         // Only initialize if the elements exist and haven't been initialized yet
         const descriptionField = document.getElementById('description');
@@ -19,6 +19,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(editor => {
                     window.descriptionEditor = editor;
                     console.log('Description editor initialized');
+                    
+                    // Add change listener to sync with textarea
+                    editor.model.document.on('change:data', () => {
+                        descriptionField.value = editor.getData();
+                        console.log('Description automatically synced');
+                    });
                 })
                 .catch(error => {
                     console.error('Error initializing description editor:', error);
@@ -31,6 +37,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(editor => {
                     window.coverLetterEditor = editor;
                     console.log('Cover letter editor initialized');
+                    
+                    // Add change listener to sync with textarea
+                    editor.model.document.on('change:data', () => {
+                        coverLetterField.value = editor.getData();
+                        console.log('Cover letter automatically synced');
+                    });
                 })
                 .catch(error => {
                     console.error('Error initializing cover letter editor:', error);
@@ -41,52 +53,55 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize editors on page load
     initializeEditors();
     
-    // Add a form submit event handler to update CKEditor content before form submission
-    if (jobForm) {
-        jobForm.addEventListener('submit', function(e) {
-            // Temporarily prevent the form from submitting
-            e.preventDefault();
+    // Use a simpler approach that directly synchronizes the CKEditor content with the textarea
+    // Set up a save button handler to update CKEditor content before submission
+    const saveButton = document.querySelector('input[type="submit"]');
+    if (jobForm && saveButton) {
+        // Create a manual synchronization function
+        const syncEditors = function() {
+            console.log('Synchronizing CKEditor data with textareas');
             
-            console.log('Form submit intercepted');
-            
-            try {
-                // Get the data from CKEditor instances if they exist and update form fields
-                if (window.descriptionEditor) {
-                    try {
-                        const descriptionData = window.descriptionEditor.getData();
-                        document.getElementById('description').value = descriptionData;
-                        console.log('Updated description field with editor data');
-                    } catch (editorError) {
-                        console.error('Error getting description editor data:', editorError);
-                    }
-                }
-                
-                if (window.coverLetterEditor) {
-                    try {
-                        const coverLetterData = window.coverLetterEditor.getData();
-                        document.getElementById('cover_letter').value = coverLetterData;
-                        console.log('Updated cover letter field with editor data');
-                    } catch (editorError) {
-                        console.error('Error getting cover letter editor data:', editorError);
-                    }
-                }
-                
-                // Continue with the form submission
-                console.log('Continuing with form submission');
-                // Use setTimeout to ensure the form values are updated before submitting
-                setTimeout(() => {
-                    this.submit();
-                }, 0);
-                
-            } catch (error) {
-                console.error('Error during form submission:', error);
-                alert('Error saving job. Please try again.');
-                // Re-enable the submit button
-                const submitBtn = jobForm.querySelector('input[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.disabled = false;
+            // Update description field
+            if (window.descriptionEditor) {
+                try {
+                    const descriptionData = window.descriptionEditor.getData();
+                    document.getElementById('description').value = descriptionData;
+                    console.log('Synced description field with editor data');
+                } catch (error) {
+                    console.error('Error syncing description:', error);
                 }
             }
+            
+            // Update cover letter field
+            if (window.coverLetterEditor) {
+                try {
+                    const coverLetterData = window.coverLetterEditor.getData();
+                    document.getElementById('cover_letter').value = coverLetterData;
+                    console.log('Synced cover letter field with editor data');
+                } catch (error) {
+                    console.error('Error syncing cover letter:', error);
+                }
+            }
+        };
+        
+        // Sync data when the form loses focus
+        jobForm.addEventListener('focusout', syncEditors);
+        
+        // Also sync data when any input changes
+        jobForm.addEventListener('input', syncEditors);
+        
+        // And sync every 5 seconds as a backup
+        setInterval(syncEditors, 5000);
+        
+        // Most importantly, sync right before submission
+        saveButton.addEventListener('click', function(e) {
+            // First synchronize
+            syncEditors();
+            
+            // Give a small delay to ensure data is updated
+            setTimeout(() => {
+                console.log('Form data synchronized, continuing with submission');
+            }, 50);
         });
     }
 
@@ -209,6 +224,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             .then(editor => {
                                 window.descriptionEditor = editor;
                                 console.log('Description editor re-initialized with content');
+                                
+                                // Add change listener to sync with textarea
+                                editor.model.document.on('change:data', () => {
+                                    document.getElementById('description').value = editor.getData();
+                                    console.log('Description automatically synced');
+                                });
                             })
                             .catch(error => {
                                 console.error('Error reinitializing description editor:', error);
@@ -219,6 +240,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             .then(editor => {
                                 window.coverLetterEditor = editor;
                                 console.log('Cover letter editor re-initialized with content');
+                                
+                                // Add change listener to sync with textarea
+                                editor.model.document.on('change:data', () => {
+                                    document.getElementById('cover_letter').value = editor.getData();
+                                    console.log('Cover letter automatically synced');
+                                });
                             })
                             .catch(error => {
                                 console.error('Error reinitializing cover letter editor:', error);
