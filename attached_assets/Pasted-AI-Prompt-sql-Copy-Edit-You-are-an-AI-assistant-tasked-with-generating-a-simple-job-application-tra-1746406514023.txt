@@ -1,0 +1,149 @@
+AI Prompt
+
+sql
+Copy
+Edit
+You are an AI assistant tasked with generating a simple job-application tracker web app, to be hosted on a cPanel LAMP environment. Follow these requirements exactly:
+
+• Tech stack:
+  - PHP 8+, MySQL
+  - jQuery for AJAX
+  - TinyMCE (or CKEditor) for WYSIWYG
+  - OpenAI API (or equivalent) for AI-powered parsing
+
+• Authentication:
+  - A single-page login form protected by a hard-coded password (store securely).
+
+• Data model (MySQL):
+  - jobs table with columns: id (PK), title (varchar), company (varchar), apply_date (date), description (text), created_at, updated_at.
+
+• Features:
+  1. **Manual Entry**: A form with inputs for Job Title, Company, Apply Date (date picker), and Job Description (WYSIWYG).  
+  2. **AI-Assisted Entry**: A textarea labeled “Paste full job posting here” plus an “Add using AI” button. When clicked, send the text to the OpenAI API; extract title, company, use current server date as apply_date, and a cleaned job description. Populate the manual entry fields automatically.  
+  3. **AJAX Search**: A search box on the main dashboard that filters existing jobs by title, company, date, or any text in the description. Results load dynamically without page refresh.  
+  4. **List View**: Display recent jobs in a responsive table with columns (Title, Company, Apply Date), plus a link to view full description.  
+  5. **Security**: Protect all pages except login behind a simple session check.
+
+• Deliverables:
+  1. Database schema SQL.  
+  2. PHP backend: login/logout, CRUD endpoints for jobs, AI parsing endpoint.  
+  3. Frontend: HTML/CSS, jQuery AJAX calls for search and AI-assist, TinyMCE integration.  
+  4. Deployment instructions for cPanel (upload files, set up database, configure PHP).
+
+Write clear, commented code and include installation steps in a README.
+Product Requirements Document (PRD)
+1. Overview
+Build a lightweight web application to log and track job applications, with manual and AI-assisted entry, hosted on cPanel.
+
+2. Goals
+Simplify logging of jobs you apply to.
+
+Quickly find past applications via live search.
+
+Speed up data entry using AI extraction.
+
+Keep deployment and hosting requirements minimal.
+
+3. User Stories
+As a user, I want to log a new job application by filling in title, company, date, and description so I can track my applications.
+
+As a user, I want to paste a full job posting and click “Add using AI” so the system auto-fills the fields.
+
+As a user, I want to search across all my logged applications without reloading the page.
+
+As a user, I want to view a list of my recent applications and click to see full details.
+
+As a user, I want to protect my tracker with a simple password so no one else can view my entries.
+
+4. Functional Requirements
+ID	Requirement
+FR1	Login Page: single input for password; on success, redirect to dashboard.
+FR2	Dashboard: shows search box + table of jobs (Title, Company, Apply Date).
+FR3	Manual Entry Form: fields for Job Title, Company, Apply Date (date picker), Description (WYSIWYG).
+FR4	AI-Assist Form: textarea + “Add using AI” button; calls backend AI endpoint.
+FR5	AI Parsing: backend endpoint calls OpenAI, extracts title/company/description.
+FR6	AJAX Search: as user types, send query to backend; filter jobs by any field.
+FR7	CRUD Operations: create, read (list/detail), update, delete jobs.
+
+5. Non-Functional Requirements
+Performance: AJAX search returns results under 200 ms for up to 1,000 records.
+
+Usability: Intuitive forms; clear error/success messages.
+
+Security: Protect pages with PHP sessions; sanitize all inputs; secure OpenAI key.
+
+Maintainability: Clean, modular PHP and JS; documented code.
+
+6. Data Model
+sql
+Copy
+Edit
+CREATE TABLE jobs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  company VARCHAR(255) NOT NULL,
+  apply_date DATE NOT NULL,
+  description TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+7. Tech Stack & Architecture
+Backend: PHP 8+ (procedural or simple MVC), MySQL
+
+Frontend: HTML5, CSS3 (Bootstrap optional), jQuery
+
+WYSIWYG: TinyMCE or CKEditor
+
+AI: OpenAI PHP SDK (or raw cURL)
+
+Hosting: cPanel (LAMP)
+
+Architecture Flow
+
+Login → sets $_SESSION['authenticated'].
+
+Dashboard → loads index.php, includes jobs.php via AJAX.
+
+Manual/Add → POST to jobs_create.php.
+
+AI-Assist → AJAX POST to parse_ai.php → returns JSON fields → fill form.
+
+Search → AJAX GET to jobs_search.php?q=… → returns filtered JSON list.
+
+8. UI/UX Sketches
+Login Page: centered password field + “Login” button.
+
+Dashboard: top nav (“Logout”), left: search input; right: buttons [New Job], [AI Assist].
+
+Modal for Manual Entry & AI-Assist, each toggled via buttons.
+
+Job Table: sortable columns; “View” opens description in modal.
+
+9. AI Integration Details
+Endpoint parse_ai.php receives { text: “…” }.
+
+Calls OpenAI with a prompt:
+
+pgsql
+Copy
+Edit
+Extract the job title, company name, and job description from the following posting. Return JSON: { "title": "...", "company": "...", "description": "..." }.
+Use server’s current date for apply_date.
+
+10. Security & Deployment
+Authentication: store hashed password in a config file; simple PHP session check on every page.
+
+Sanitization: use htmlspecialchars, parameterized queries (PDO).
+
+cPanel Deployment:
+
+Upload files to public_html/job-tracker/.
+
+Create MySQL database & user via cPanel.
+
+Import SQL schema.
+
+Update config.php with DB credentials and OpenAI key.
+
+Ensure curl and PHP OpenSSL are enabled.
+
