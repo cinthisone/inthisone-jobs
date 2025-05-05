@@ -24,8 +24,9 @@ def parse_job_posting(text):
         
         prompt = (
             "Extract the job title, company name, and job description from the following job posting. "
-            "Return JSON in this format: {'title': '...', 'company': '...', 'description': '...'}. "
-            "Make sure to format the description with proper HTML paragraphs for readability.\n\n"
+            "Then, generate a professional cover letter for this position. "
+            "Return JSON in this format: {'title': '...', 'company': '...', 'description': '...', 'cover_letter': '...'}. "
+            "Make sure to format both the description and cover letter with proper HTML paragraphs for readability.\n\n"
             f"{text}"
         )
         
@@ -33,7 +34,7 @@ def parse_job_posting(text):
             model=MODEL,
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
-            temperature=0.3
+            temperature=0.7
         )
         
         result = json.loads(response.choices[0].message.content)
@@ -48,5 +49,6 @@ def parse_job_posting(text):
             "title": "",
             "company": "",
             "description": "",
+            "cover_letter": "",
             "apply_date": datetime.now().strftime("%Y-%m-%d")
         }

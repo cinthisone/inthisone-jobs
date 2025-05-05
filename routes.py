@@ -161,6 +161,7 @@ def ai_assist():
             job_form.company.data = result.get('company', '')
             job_form.apply_date.data = format_date(result.get('apply_date', datetime.now().strftime('%Y-%m-%d')))
             job_form.description.data = result.get('description', '')
+            job_form.cover_letter.data = result.get('cover_letter', '')
             
             flash('Job posting parsed successfully! Review and submit the form.', 'success')
             return render_template('job_form.html', form=job_form, ai_form=form, title="AI-Assisted Job Entry", 

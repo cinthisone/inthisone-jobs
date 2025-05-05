@@ -33,6 +33,15 @@
                     </div>
                 </div>
                 
+                {% if job.cover_letter %}
+                <div class="job-cover-letter mt-4">
+                    <h4>Cover Letter</h4>
+                    <div class="cover-letter-content">
+                        {{ job.cover_letter|safe }}
+                    </div>
+                </div>
+                {% endif %}
+                
                 <div class="mt-4 pt-3 border-top">
                     <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
