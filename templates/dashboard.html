@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Inthisone Jobs{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header py-3">
+                <div class="dashboard-header">
+                    <h2 class="mb-0">Job Applications</h2>
+                    <div class="search-container">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" id="search-input" class="form-control" placeholder="Search jobs...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body p-0">
+                <div class="dashboard-actions p-3">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{{ url_for('add_job') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i> Add Job
+                        </a>
+                        <a href="{{ url_for('ai_assist') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-robot me-1"></i> AI Assist
+                        </a>
+                    </div>
+                </div>
+                
+                <div id="loading-spinner" class="loading-spinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                
+                <div class="job-table-container">
+                    <table class="table table-hover job-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Job Title</th>
+                                <th>Company</th>
+                                <th>Apply Date</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="job-table-body">
+                            {% if jobs %}
+                                {% for job in jobs %}
+                                <tr>
+                                    <td>{{ job.title }}</td>
+                                    <td>{{ job.company }}</td>
+                                    <td>{{ job.apply_date.strftime('%Y-%m-%d') }}</td>
+                                    <td class="text-right">
+                                        <a href="{{ url_for('view_job', job_id=job.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                        <a href="{{ url_for('edit_job', job_id=job.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                        <button class="btn btn-sm btn-outline-danger delete-job" data-id="{{ job.id }}">Delete</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">
+                                        <div class="text-muted">No job applications found</div>
+                                        <a href="{{ url_for('add_job') }}" class="btn btn-primary mt-2">Add Your First Job</a>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4 text-center">
+            <div class="card p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2" alt="Office workspace" class="img-fluid rounded" style="max-height: 250px;">
+                    </div>
+                    <div class="col-md-6 text-start">
+                        <h3>Stay Organized</h3>
+                        <p>Keep track of all your job applications in one place. Never miss a follow-up opportunity again!</p>
+                        <p>Use our AI-powered assistant to quickly log job applications directly from job postings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

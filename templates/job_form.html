@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Inthisone Jobs{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <h2 class="mb-4">{{ title }}</h2>
+        
+        {% if 'AI-Assisted' in title %}
+        <div class="card mb-4 ai-form-container">
+            <div class="card-header">
+                <h4 class="mb-0">AI-Assisted Job Entry</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Paste a job posting below and our AI will automatically extract the key information for you.</p>
+                
+                <form id="ai-job-form" method="POST" action="{{ url_for('api_parse_job') }}">
+                    <div class="mb-3">
+                        {{ ai_form.job_posting(class="form-control", rows=8, placeholder="Paste full job posting here...") }}
+                    </div>
+                    <div class="d-grid">
+                        {{ ai_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card form-container">
+            <div class="card-body">
+                <h4 class="mb-3">Job Details</h4>
+                
+                <form id="job-form" method="POST" action="{{ request.path }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="title" class="form-label">Job Title</label>
+                            {{ form.title(class="form-control") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="company" class="form-label">Company</label>
+                            {{ form.company(class="form-control") }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="apply_date" class="form-label">Application Date</label>
+                        {{ form.apply_date(class="form-control", type="date") }}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="description" class="form-label">Job Description</label>
+                        {{ form.description(class="form-control") }}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if 'AI-Assisted' in title %}
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <img src="https://images.unsplash.com/photo-1506784926709-22f1ec395907" alt="Career development" class="img-fluid rounded">
+                    </div>
+                    <div class="col-md-8">
+                        <h3>AI-Powered Job Tracking</h3>
+                        <p>Our AI assistant helps you save time by automatically extracting key information from job postings. Simply paste the job description, and the system will do the rest!</p>
+                        <p>Focus on your applications while we handle the data entry.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

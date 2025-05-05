@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Inthisone Jobs{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="card">
+        <div class="hero-container">
+            <img src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d" alt="Job Search" class="hero-image">
+            <div class="hero-overlay">
+                <h1 class="hero-title">Inthisone Jobs</h1>
+                <p class="hero-subtitle">Track your job applications with ease</p>
+            </div>
+        </div>
+        
+        <div class="card-body p-4">
+            <h2 class="text-center mb-4">Login</h2>
+            
+            <form method="POST" action="{{ url_for('login') }}">
+                {{ form.hidden_tag() }}
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    {{ form.password(class="form-control", placeholder="Enter password") }}
+                </div>
+                
+                <div class="d-grid gap-2">
+                    {{ form.submit(class="btn btn-primary btn-lg") }}
+                </div>
+            </form>
+            
+            <div class="mt-4 text-center">
+                <small class="text-muted">Don't have access? Contact your administrator</small>
+                <p class="mt-2"><a href="{{ url_for('setup_password') }}">Setup Password</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
