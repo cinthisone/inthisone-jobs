@@ -1,0 +1,77 @@
+ITS Interactive Logo
+ITS Interactive
+3.2
+Senior Web Developer (Back-End)
+
+
+
+Apply on employer site
+Newton, MA
+
+
+Apply on employer site
+Your qualifications for this job
+
+Edit
+Web development
+HTML
+PHP
+JavaScript
+CSS
+Do you also have these qualifications?
+
+X
+SQL
+
+X
+E-commerce
+
+X
+.NET
+
+X
+ASP.NET
+
+Show more
+
+How to Apply
+Interested candidates should email their resume and cover letter to webjobs@itsinteractive.com.
+
+
+If you’re a versatile, imaginative web developer who enjoys working in a supportive environment – where the expertise you bring will be appreciated and where you’ll have the opportunity to learn from your peers and build new skills in new areas – Information Technology Systems, Inc. has an opening in our web development team.
+
+Position Description
+
+ITS is the world’s number-one supplier of information and services to the multi-billion-dollar gaming industry, including the most popular network of free gaming portal sites on the web, casinocity.com, with millions of visitors monthly, and an interactive guide to more than 4,000 casinos and gaming properties around the globe. We also have a thriving Web consulting business, ITS Interactive. This role will have exciting web development challenges from both business lines.
+
+As a Senior Web Developer, you’ll be working with the latest .Net technologies. You’ll be involved in the building out of new applications for our in-house brands and client websites. You’ll have the latitude to work independently and add value creatively as you research and discover innovative ways to solve technical problems to meet increasingly complex industry and internal development challenges.
+
+Key Responsibilities
+
+Participate as a member of cross-functional design/development teams and contribute during all phases of the software development lifecycle.
+Work closely with engineers across the organization to improve and maintain multi-tiered web-based applications.
+Comply with process methodologies including source control, unit testing, and coding standards for HTML and CSS.
+Perform basic requirements of testing, debugging, and troubleshooting in a dynamic production environment.
+
+Qualifications
+
+Experience within an e-commerce or content-driven application environment.
+Experience with SQL programming (MS-SQL preferred).
+Demonstrated development experience using most of the following: ASP.Net (C# or VB.Net), Cold Fusion, PHP, JavaScript, HTML, CSS, XSL, AJAX, FML.
+Expertise with CSS/HTML, W3C DOM methods and properties and cross browser development.
+Proven cross-browser compatibility and browser degradation issues, as well as, optimization techniques (both in file weight and perceived/actual rendering speed).
+Intimate knowledge of cross-browser HTML development issues.
+A desire to work as a technical lead on projects.
+Must have good communications skills and be a strong team player.
+5-7 years of related web development experience.
+
+Benefits
+
+Salary is competitive and commensurate with experience. Comprehensive benefits include health, dental, life, and disability insurance; vacation, holidays and personal days, and sick time; flexible spending accounts; 401(k) with company match; private stock options; and more.
+
+ITS is an equal-opportunity employer and encourages diversity in the workplace.
+
+We will not respond to inquiries from recruiting agencies or third-parties.
+
+
+Show less

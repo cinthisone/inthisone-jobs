@@ -102,10 +102,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            const submitBtn = aiForm.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
+            const submitBtn = aiForm.querySelector('input[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+            submitBtn.value = 'Processing...';
             
             // Call the API endpoint to parse the job posting
             fetch('/api/parse-job', {
@@ -141,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .finally(() => {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
+                submitBtn.value = 'Add using AI';
             });
         });
     }
