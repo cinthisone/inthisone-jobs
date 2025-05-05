@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Get our form elements
     const jobForm = document.getElementById('job-form');
-    const manualSubmitBtn = document.getElementById('manual-submit-btn');
     
     // Initialize CKEditor for description and cover letter fields
     // Make them available globally in this scope
@@ -42,34 +41,52 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize editors on page load
     initializeEditors();
     
-    if (jobForm && manualSubmitBtn) {
-        // Attach click handler to manually submit the form
-        manualSubmitBtn.addEventListener('click', function() {
-            console.log('Manual submit button clicked');
+    // Handle form submission and extract CKEditor content
+    if (jobForm) {
+        jobForm.addEventListener('submit', function(e) {
+            // Prevent the default form submission
+            e.preventDefault();
             
-            // 1. Disable the button to prevent double-submission
-            manualSubmitBtn.disabled = true;
-            manualSubmitBtn.innerHTML = 'Saving...';
+            console.log('Form submit event intercepted');
+            
+            // Get the submit button and disable it
+            const submitBtn = document.getElementById('save-job-btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.value = 'Saving...';
+            }
             
             try {
-                // Get the data from CKEditor instances if they exist
+                // Get the data from CKEditor instances if they exist and update form fields
                 if (window.descriptionEditor) {
-                    const descriptionData = window.descriptionEditor.getData();
-                    document.getElementById('description').value = descriptionData;
+                    try {
+                        const descriptionData = window.descriptionEditor.getData();
+                        document.getElementById('description').value = descriptionData;
+                        console.log('Updated description field with editor data');
+                    } catch (editorError) {
+                        console.error('Error getting description editor data:', editorError);
+                    }
                 }
                 
                 if (window.coverLetterEditor) {
-                    const coverLetterData = window.coverLetterEditor.getData();
-                    document.getElementById('cover_letter').value = coverLetterData;
+                    try {
+                        const coverLetterData = window.coverLetterEditor.getData();
+                        document.getElementById('cover_letter').value = coverLetterData;
+                        console.log('Updated cover letter field with editor data');
+                    } catch (editorError) {
+                        console.error('Error getting cover letter editor data:', editorError);
+                    }
                 }
                 
-                // 2. Submit the form
-                jobForm.submit();
-                console.log('Form submitted manually with editor data');
+                // Now submit the form natively
+                console.log('Submitting form...');
+                this.submit();
             } catch (error) {
-                console.error('Error submitting form:', error);
-                manualSubmitBtn.disabled = false;
-                manualSubmitBtn.innerHTML = 'Save Job';
+                console.error('Error during form submission:', error);
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.value = 'Save Job';
+                }
                 alert('Error saving job. Please try again.');
             }
         });

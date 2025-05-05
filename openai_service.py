@@ -24,7 +24,10 @@ def parse_job_posting(text):
         
         prompt = (
             "Extract the job title, company name, and job description from the following job posting. "
-            "Then, generate a professional cover letter for this position. "
+            "Then, generate a professional cover letter for this position using this information: "
+            "Name: Chan Inthisone, Phone: 781-664-4975, Email: cinthisone@gmail.com. "
+            "The cover letter should be concise, no more than 3 paragraphs total. "
+            "Include contact information at the top of the cover letter. "
             "Return JSON in this format: {'title': '...', 'company': '...', 'description': '...', 'cover_letter': '...'}. "
             "Make sure to format both the description and cover letter with proper HTML paragraphs for readability.\n\n"
             f"{text}"
