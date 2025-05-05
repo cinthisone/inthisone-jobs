@@ -1,74 +1,31 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Create temporary textareas that won't be replaced by CKEditor
-    // but will be used to store CKEditor content for form submission
-    const descriptionTextarea = document.querySelector('#description');
-    const coverLetterTextarea = document.querySelector('#cover_letter');
+    // Simplify everything - let's just use the regular textareas
+    // and add a submit button handler
     
-    // Only proceed if we have these elements
-    if (descriptionTextarea && coverLetterTextarea) {
-        // Create hidden fields to store the CKEditor content
-        const descriptionHidden = document.createElement('textarea');
-        descriptionHidden.id = 'description_hidden';
-        descriptionHidden.name = 'description';
-        descriptionHidden.style.display = 'none';
-        descriptionHidden.value = descriptionTextarea.value;
-        
-        const coverLetterHidden = document.createElement('textarea');
-        coverLetterHidden.id = 'cover_letter_hidden';
-        coverLetterHidden.name = 'cover_letter';
-        coverLetterHidden.style.display = 'none';
-        coverLetterHidden.value = coverLetterTextarea.value;
-        
-        // Change original textareas so they don't get submitted
-        descriptionTextarea.name = 'description_display';
-        coverLetterTextarea.name = 'cover_letter_display';
-        
-        // Add hidden fields to form
-        const jobForm = document.getElementById('job-form');
-        if (jobForm) {
-            jobForm.appendChild(descriptionHidden);
-            jobForm.appendChild(coverLetterHidden);
+    // Get our form elements
+    const jobForm = document.getElementById('job-form');
+    const manualSubmitBtn = document.getElementById('manual-submit-btn');
+    
+    if (jobForm && manualSubmitBtn) {
+        // Attach click handler to manually submit the form
+        manualSubmitBtn.addEventListener('click', function() {
+            console.log('Manual submit button clicked');
             
-            // Initialize CKEditor
-            // Make editors globally accessible
-            window.descriptionEditor = null;
-            window.coverLetterEditor = null;
+            // 1. Disable the button to prevent double-submission
+            manualSubmitBtn.disabled = true;
+            manualSubmitBtn.innerHTML = 'Saving...';
             
-            ClassicEditor
-                .create(descriptionTextarea)
-                .then(editor => {
-                    window.descriptionEditor = editor;
-                    // Update hidden field when content changes
-                    editor.model.document.on('change:data', () => {
-                        descriptionHidden.value = editor.getData();
-                        console.log('Description updated:', descriptionHidden.value.substring(0, 50));
-                    });
-                })
-                .catch(error => {
-                    console.error('Description editor error:', error);
-                });
-            
-            ClassicEditor
-                .create(coverLetterTextarea)
-                .then(editor => {
-                    window.coverLetterEditor = editor;
-                    // Update hidden field when content changes
-                    editor.model.document.on('change:data', () => {
-                        coverLetterHidden.value = editor.getData();
-                        console.log('Cover letter updated:', coverLetterHidden.value.substring(0, 50));
-                    });
-                })
-                .catch(error => {
-                    console.error('Cover letter editor error:', error);
-                });
-                
-            // Add form submit handler to log what's being submitted
-            jobForm.addEventListener('submit', function(e) {
-                console.log('Form submitted');
-                console.log('Description value:', descriptionHidden.value.substring(0, 50));
-                console.log('Cover letter value:', coverLetterHidden.value.substring(0, 50));
-            });
-        }
+            try {
+                // 2. Submit the form directly without using CKEditor
+                jobForm.submit();
+                console.log('Form submitted manually');
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                manualSubmitBtn.disabled = false;
+                manualSubmitBtn.innerHTML = 'Save Job';
+                alert('Error saving job. Please try again.');
+            }
+        });
     }
 
     // Search functionality
@@ -168,22 +125,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('company').value = data.company || '';
                     document.getElementById('apply_date').value = data.apply_date || '';
                     
-                    // Update CKEditor content
-                    if (window.descriptionEditor) {
-                        window.descriptionEditor.setData(data.description || '');
-                        // Also update hidden field
-                        document.getElementById('description_hidden').value = data.description || '';
-                    } else {
-                        document.getElementById('description').value = data.description || '';
-                    }
-                    
-                    if (window.coverLetterEditor && data.cover_letter) {
-                        window.coverLetterEditor.setData(data.cover_letter || '');
-                        // Also update hidden field
-                        document.getElementById('cover_letter_hidden').value = data.cover_letter || '';
-                    } else if (data.cover_letter) {
-                        document.getElementById('cover_letter').value = data.cover_letter || '';
-                    }
+                    // Simply set textarea values directly
+                    document.getElementById('description').value = data.description || '';
+                    document.getElementById('cover_letter').value = data.cover_letter || '';
                     
                     showAlert('Job posting parsed successfully! Review and submit the form.', 'success');
                     
