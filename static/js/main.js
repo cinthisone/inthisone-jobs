@@ -21,10 +21,10 @@ function processAIJobPosting() {
     }
     
     // Show processing state
-    var submitBtn = document.querySelector('#ai-job-form input[type="submit"]');
+    var submitBtn = document.getElementById('ai-assist-button');
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.value = 'Processing...';
+        submitBtn.textContent = 'Processing...';
     }
     
     // Create AJAX request
@@ -102,7 +102,7 @@ function processAIJobPosting() {
         // Reset button state
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.value = 'Add using AI';
+            submitBtn.textContent = 'Add using AI';
         }
     };
     
@@ -112,7 +112,7 @@ function processAIJobPosting() {
         
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.value = 'Add using AI';
+            submitBtn.textContent = 'Add using AI';
         }
     };
     

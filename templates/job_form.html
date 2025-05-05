@@ -15,14 +15,14 @@
             <div class="card-body">
                 <p class="text-muted">Paste a job posting below and our AI will automatically extract the key information for you.</p>
                 
-                <form id="ai-job-form" action="javascript:void(0);" onsubmit="processAIJobPosting(); return false;">
+                <div id="ai-job-form">
                     <div class="mb-3">
-                        {{ ai_form.job_posting(class="form-control", rows=8, placeholder="Paste full job posting here...") }}
+                        <textarea id="job_posting" name="job_posting" class="form-control" rows="8" placeholder="Paste full job posting here..."></textarea>
                     </div>
                     <div class="d-grid">
-                        {{ ai_form.submit(class="btn btn-primary") }}
+                        <button type="button" id="ai-assist-button" class="btn btn-primary" onclick="processAIJobPosting()">Add using AI</button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
         {% endif %}
