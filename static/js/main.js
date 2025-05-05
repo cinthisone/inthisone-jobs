@@ -41,18 +41,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize editors on page load
     initializeEditors();
     
-    // Add a click handler to the submit button to update CKEditor content before submission
-    const saveJobBtn = document.getElementById('save-job-btn');
-    if (jobForm && saveJobBtn) {
-        saveJobBtn.addEventListener('click', function(e) {
-            // Prevent the default button behavior
+    // Add a form submit event handler to update CKEditor content before form submission
+    if (jobForm) {
+        jobForm.addEventListener('submit', function(e) {
+            // Temporarily prevent the form from submitting
             e.preventDefault();
             
-            console.log('Save job button clicked');
-            
-            // Disable the button to prevent double-submission
-            saveJobBtn.disabled = true;
-            saveJobBtn.innerHTML = 'Saving...';
+            console.log('Form submit intercepted');
             
             try {
                 // Get the data from CKEditor instances if they exist and update form fields
@@ -76,22 +71,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
-                // Find the hidden submit button and click it
-                const hiddenSubmit = jobForm.querySelector('input[type="submit"]');
-                console.log('Triggering form submission via hidden submit button');
-                if (hiddenSubmit) {
-                    // Manually trigger a click on the hidden submit button
-                    hiddenSubmit.click();
-                } else {
-                    // Fallback to direct form submission
-                    console.log('No hidden submit button found, using direct form submission');
-                    jobForm.submit();
-                }
+                // Continue with the form submission
+                console.log('Continuing with form submission');
+                // Use setTimeout to ensure the form values are updated before submitting
+                setTimeout(() => {
+                    this.submit();
+                }, 0);
+                
             } catch (error) {
-                console.error('Error before form submission:', error);
-                saveJobBtn.disabled = false;
-                saveJobBtn.innerHTML = 'Save Job';
+                console.error('Error during form submission:', error);
                 alert('Error saving job. Please try again.');
+                // Re-enable the submit button
+                const submitBtn = jobForm.querySelector('input[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                }
             }
         });
     }
