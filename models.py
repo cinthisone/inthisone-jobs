@@ -10,6 +10,7 @@ class Job(db.Model):
     company = db.Column(db.String(255), nullable=False)
     apply_date = db.Column(db.Date, nullable=False)
     description = db.Column(db.Text, nullable=False)
+    cover_letter = db.Column(db.Text, nullable=True)  # New field for cover letter
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -21,6 +22,7 @@ class Job(db.Model):
             'company': self.company,
             'apply_date': self.apply_date.strftime('%Y-%m-%d'),
             'description': self.description,
+            'cover_letter': self.cover_letter,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
         }

@@ -4,7 +4,16 @@ document.addEventListener('DOMContentLoaded', function() {
         ClassicEditor
             .create(document.querySelector('#description'))
             .catch(error => {
-                console.error(error);
+                console.error('Description editor error:', error);
+            });
+    }
+    
+    // Initialize CKEditor for cover letter
+    if (document.querySelector('#cover_letter')) {
+        ClassicEditor
+            .create(document.querySelector('#cover_letter'))
+            .catch(error => {
+                console.error('Cover letter editor error:', error);
             });
     }
 

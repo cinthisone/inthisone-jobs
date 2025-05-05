@@ -14,6 +14,7 @@ class JobForm(FlaskForm):
     company = StringField('Company', validators=[DataRequired(), Length(max=255)])
     apply_date = DateField('Application Date', validators=[DataRequired()], default=date.today)
     description = TextAreaField('Job Description', validators=[DataRequired()])
+    cover_letter = TextAreaField('Cover Letter')  # New field for cover letter
     submit = SubmitField('Save Job')
 
 class AIJobForm(FlaskForm):

@@ -86,7 +86,8 @@ def add_job():
                 title=form.title.data,
                 company=form.company.data,
                 apply_date=form.apply_date.data,
-                description=form.description.data
+                description=form.description.data,
+                cover_letter=form.cover_letter.data
             )
             db.session.add(job)
             db.session.commit()
@@ -116,6 +117,7 @@ def edit_job(job_id):
             job.company = form.company.data
             job.apply_date = form.apply_date.data
             job.description = form.description.data
+            job.cover_letter = form.cover_letter.data
             db.session.commit()
             flash('Job application updated successfully!', 'success')
             return redirect(url_for('dashboard'))
