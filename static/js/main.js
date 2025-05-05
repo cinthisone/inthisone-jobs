@@ -53,10 +53,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize editors on page load
     initializeEditors();
     
-    // Use a simpler approach that directly synchronizes the CKEditor content with the textarea
-    // Set up a save button handler to update CKEditor content before submission
-    const saveButton = document.querySelector('input[type="submit"]');
-    if (jobForm && saveButton) {
+    // Use a different approach for form submission
+    if (jobForm) {
         // Create a manual synchronization function
         const syncEditors = function() {
             console.log('Synchronizing CKEditor data with textareas');
@@ -84,24 +82,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
         
-        // Sync data when the form loses focus
-        jobForm.addEventListener('focusout', syncEditors);
-        
-        // Also sync data when any input changes
-        jobForm.addEventListener('input', syncEditors);
-        
-        // And sync every 5 seconds as a backup
-        setInterval(syncEditors, 5000);
-        
-        // Most importantly, sync right before submission
-        saveButton.addEventListener('click', function(e) {
-            // First synchronize
+        // Replace the event handler approach with a direct form submission handler
+        jobForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Sync editor data to textareas
             syncEditors();
             
-            // Give a small delay to ensure data is updated
-            setTimeout(() => {
-                console.log('Form data synchronized, continuing with submission');
-            }, 50);
+            // Log the form data about to be submitted
+            console.log('Form submission attempted');
+            console.log('Form action:', this.action);
+            console.log('Form data:', new FormData(this));
+            
+            // Create a data object to submit
+            const formData = new FormData(this);
+            
+            // Submit the form with fetch
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'text/html,application/xhtml+xml'
+                }
+            })
+            .then(response => {
+                if (response.redirected) {
+                    console.log('Form submitted successfully, redirecting to', response.url);
+                    window.location.href = response.url;
+                } else {
+                    return response.text().then(html => {
+                        // If we got HTML back, it might be form errors
+                        console.log('Form submission returned HTML, updating page');
+                        document.open();
+                        document.write(html);
+                        document.close();
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+                showAlert('There was an error saving the job. Please try again.', 'danger');
+            });
         });
     }
 

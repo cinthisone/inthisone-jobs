@@ -31,7 +31,7 @@
             <div class="card-body">
                 <h4 class="mb-3">Job Details</h4>
                 
-                <form id="job-form" method="POST" action="{{ request.path }}">
+                <form id="job-form" method="POST" action="{{ url_for('add_job') if request.path == url_for('add_job') or 'ai-assist' in request.path else request.path }}" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
                     <div id="form-messages"></div>
                     
