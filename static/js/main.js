@@ -85,6 +85,10 @@ function processAIJobPosting() {
                     if (data.pay_range) {
                         document.getElementById('pay_range').value = data.pay_range;
                     }
+                    // Set job URL if available
+                    if (data.job_url) {
+                        document.getElementById('job_url').value = data.job_url;
+                    }
                     
                     // Reinitialize editors with new content
                     setTimeout(function() {

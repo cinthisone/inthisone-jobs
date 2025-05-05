@@ -17,6 +17,13 @@
                             {% if job.pay_range %}
                             <span class="badge bg-success ms-2">Salary: {{ job.pay_range }}</span>
                             {% endif %}
+                            {% if job.job_url %}
+                            <span class="ms-2">
+                                <a href="{{ job.job_url }}" target="_blank" class="badge bg-info text-decoration-none">
+                                    <i class="fas fa-external-link-alt me-1"></i>View Job Posting
+                                </a>
+                            </span>
+                            {% endif %}
                         </div>
                     </div>
                     <div>
