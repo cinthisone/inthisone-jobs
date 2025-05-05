@@ -81,6 +81,10 @@ function processAIJobPosting() {
                     // Set values directly to textareas
                     document.getElementById('description').value = data.description || '';
                     document.getElementById('cover_letter').value = data.cover_letter || '';
+                    // Set pay range if available
+                    if (data.pay_range) {
+                        document.getElementById('pay_range').value = data.pay_range;
+                    }
                     
                     // Reinitialize editors with new content
                     setTimeout(function() {
