@@ -42,7 +42,7 @@ class Job(db.Model):
 
     def to_dict(self):
         """Convert instance to dictionary"""
-        return {
+        result = {
             'id': self.id,
             'title': self.title,
             'company': self.company,
@@ -53,6 +53,16 @@ class Job(db.Model):
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
         }
+        
+        # Include resume information if available
+        if self.resume:
+            result['resume'] = {
+                'id': self.resume.id,
+                'title': self.resume.title,
+                'job_title': self.resume.job_title
+            }
+        
+        return result
 
 class User(db.Model):
     """Model for user authentication"""
