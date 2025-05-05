@@ -120,6 +120,15 @@ def add_job():
                 apply_date = datetime.strptime(apply_date_str, '%Y-%m-%d').date() if apply_date_str else date.today()
             except ValueError:
                 apply_date = date.today()
+            
+            # Extra validation to prevent empty values
+            if not title or title.strip() == '':
+                flash('Job title cannot be empty', 'danger')
+                return render_template('job_form.html', form=form, title="Add New Job Application")
+                
+            if not company or company.strip() == '':
+                flash('Company name cannot be empty', 'danger')
+                return render_template('job_form.html', form=form, title="Add New Job Application")
                 
             # Create and save the job
             job = Job(
@@ -154,6 +163,15 @@ def edit_job(job_id):
             
         # Validate form
         if form.validate():
+            # Extra validation to prevent empty values
+            if not form.title.data or form.title.data.strip() == '':
+                flash('Job title cannot be empty', 'danger')
+                return render_template('job_form.html', form=form, title="Edit Job Application")
+                
+            if not form.company.data or form.company.data.strip() == '':
+                flash('Company name cannot be empty', 'danger')
+                return render_template('job_form.html', form=form, title="Edit Job Application")
+                
             job.title = form.title.data
             job.company = form.company.data
             job.apply_date = form.apply_date.data

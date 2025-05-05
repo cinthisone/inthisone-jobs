@@ -296,24 +296,34 @@ document.addEventListener('DOMContentLoaded', function() {
             button.addEventListener('click', function() {
                 const jobId = this.getAttribute('data-id');
                 if (confirm('Are you sure you want to delete this job application?')) {
-                    // Create and submit a form with POST method for proper CSRF handling
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/jobs/delete/${jobId}`;
-                    form.style.display = 'none';
-                    
-                    // Add CSRF token if available (get it from any existing form with csrf_token)
-                    const csrfToken = document.querySelector('input[name="csrf_token"]');
-                    if (csrfToken) {
-                        const csrfInput = document.createElement('input');
-                        csrfInput.type = 'hidden';
-                        csrfInput.name = 'csrf_token';
-                        csrfInput.value = csrfToken.value;
-                        form.appendChild(csrfInput);
+                    try {
+                        console.log(`Deleting job ID: ${jobId}`);
+                        
+                        // Create and submit a form with POST method for proper CSRF handling
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/jobs/delete/${jobId}`;
+                        form.style.display = 'none';
+                        
+                        // Add CSRF token from our hidden form
+                        const csrfToken = document.querySelector('#csrf-form input[name="csrf_token"]');
+                        if (csrfToken) {
+                            console.log('Found CSRF token, adding to form');
+                            const csrfInput = document.createElement('input');
+                            csrfInput.type = 'hidden';
+                            csrfInput.name = 'csrf_token';
+                            csrfInput.value = csrfToken.value;
+                            form.appendChild(csrfInput);
+                        } else {
+                            console.warn('CSRF token not found!');
+                        }
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    } catch (error) {
+                        console.error('Error in delete operation:', error);
+                        alert('Error deleting job: ' + error.message);
                     }
-                    
-                    document.body.appendChild(form);
-                    form.submit();
                 }
             });
         });

@@ -30,6 +30,9 @@ def parse_job_posting(text):
             "Include contact information at the top of the cover letter. "
             "Return JSON in this format: {'title': '...', 'company': '...', 'description': '...', 'cover_letter': '...'}. "
             "Make sure to format both the description and cover letter with proper HTML paragraphs for readability.\n\n"
+            "IMPORTANT: The title and company fields MUST be non-empty strings. If you can't extract them "
+            "with high confidence, use 'Unknown Job Title' and 'Unknown Company' as fallbacks, "
+            "but never return empty strings for these fields.\n\n"
             f"{text}"
         )
         
@@ -45,13 +48,20 @@ def parse_job_posting(text):
         # Add current date as apply_date
         result["apply_date"] = datetime.now().strftime("%Y-%m-%d")
         
+        # Make sure title and company are never empty
+        if not result.get('title') or result['title'].strip() == '':
+            result['title'] = 'Unknown Job Title'
+            
+        if not result.get('company') or result['company'].strip() == '':
+            result['company'] = 'Unknown Company'
+        
         return result
     except Exception as e:
         return {
             "error": str(e),
-            "title": "",
-            "company": "",
-            "description": "",
+            "title": "Unknown Job Title",
+            "company": "Unknown Company",
+            "description": "Error extracting job details. Please try again.",
             "cover_letter": "",
             "apply_date": datetime.now().strftime("%Y-%m-%d")
         }
