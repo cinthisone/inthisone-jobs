@@ -52,9 +52,20 @@ document.addEventListener('DOMContentLoaded', function() {
             manualSubmitBtn.innerHTML = 'Saving...';
             
             try {
-                // 2. Submit the form directly
+                // Get the data from CKEditor instances if they exist
+                if (window.descriptionEditor) {
+                    const descriptionData = window.descriptionEditor.getData();
+                    document.getElementById('description').value = descriptionData;
+                }
+                
+                if (window.coverLetterEditor) {
+                    const coverLetterData = window.coverLetterEditor.getData();
+                    document.getElementById('cover_letter').value = coverLetterData;
+                }
+                
+                // 2. Submit the form
                 jobForm.submit();
-                console.log('Form submitted manually');
+                console.log('Form submitted manually with editor data');
             } catch (error) {
                 console.error('Error submitting form:', error);
                 manualSubmitBtn.disabled = false;
@@ -160,10 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('company').value = data.company || '';
                     document.getElementById('apply_date').value = data.apply_date || '';
                     
-                    // Set textarea values directly
-                    document.getElementById('description').value = data.description || '';
-                    document.getElementById('cover_letter').value = data.cover_letter || '';
-                    
                     // Destroy existing editor instances if they exist
                     if (window.descriptionEditor) {
                         window.descriptionEditor.destroy();
@@ -175,9 +182,33 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.coverLetterEditor = null;
                     }
                     
+                    // Set textarea values directly before reinitializing
+                    document.getElementById('description').value = data.description || '';
+                    document.getElementById('cover_letter').value = data.cover_letter || '';
+                    
                     // Reinitialize the editors with new content
                     setTimeout(() => {
-                        initializeEditors();
+                        // Initialize the CKEditor instances again
+                        ClassicEditor
+                            .create(document.getElementById('description'))
+                            .then(editor => {
+                                window.descriptionEditor = editor;
+                                console.log('Description editor re-initialized with content');
+                            })
+                            .catch(error => {
+                                console.error('Error reinitializing description editor:', error);
+                            });
+                            
+                        ClassicEditor
+                            .create(document.getElementById('cover_letter'))
+                            .then(editor => {
+                                window.coverLetterEditor = editor;
+                                console.log('Cover letter editor re-initialized with content');
+                            })
+                            .catch(error => {
+                                console.error('Error reinitializing cover letter editor:', error);
+                            });
+                            
                         showAlert('Job posting parsed successfully! Review and submit the form.', 'success');
                         // Scroll to the form
                         document.getElementById('job-form').scrollIntoView({ behavior: 'smooth' });
