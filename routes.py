@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, url_for, session, flash, j
 from datetime import datetime, date
 import json
 from werkzeug.security import generate_password_hash
+from sqlalchemy import text
 
 from app import app, db
 from models import Job, User
@@ -171,10 +172,33 @@ def edit_job(job_id):
 @app.route('/jobs/delete/<int:job_id>', methods=['POST'])
 @login_required
 def delete_job(job_id):
-    job = Job.query.get_or_404(job_id)
-    db.session.delete(job)
-    db.session.commit()
-    flash('Job application deleted successfully!', 'success')
+    try:
+        # Get the job and log its information
+        job = Job.query.get_or_404(job_id)
+        print(f"Deleting job: ID={job.id}, Title={job.title or 'Empty'}, Company={job.company or 'Empty'}")
+        
+        # Delete the job
+        db.session.delete(job)
+        db.session.commit()
+        
+        print(f"Job {job_id} deleted successfully")
+        flash('Job application deleted successfully!', 'success')
+    except Exception as e:
+        print(f"Error deleting job {job_id}: {str(e)}")
+        
+        # If normal deletion failed, try direct SQL deletion as a fallback
+        try:
+            print(f"Attempting direct SQL deletion for job {job_id}")
+            db.session.execute(text(f"DELETE FROM jobs WHERE id = {job_id}"))
+            db.session.commit()
+            print(f"Job {job_id} force deleted via SQL")
+            flash('Job application deleted successfully (forced deletion)!', 'success')
+            return redirect(url_for('dashboard'))
+        except Exception as sql_error:
+            print(f"SQL deletion also failed: {str(sql_error)}")
+            db.session.rollback()
+            flash(f'Error deleting job: {str(e)}', 'danger')
+    
     return redirect(url_for('dashboard'))
 
 @app.route('/jobs/view/<int:job_id>')
