@@ -75,6 +75,12 @@
                         {{ form.cover_letter(class="form-control") }}
                     </div>
                     
+                    <div class="mb-3">
+                        <label for="pay_range" class="form-label">Pay Range (Optional)</label>
+                        {{ form.pay_range(class="form-control") }}
+                        <div class="form-text">{{ form.pay_range.description }}</div>
+                    </div>
+                    
                     <div class="mb-4">
                         <label for="resume_id" class="form-label">Attach Resume (Optional)</label>
                         {{ form.resume_id(class="form-select") }}

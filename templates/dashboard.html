@@ -53,6 +53,9 @@
                                 <th class="sortable" data-sort="apply_date">
                                     Apply Date <i class="fas fa-sort"></i>
                                 </th>
+                                <th class="sortable" data-sort="pay_range">
+                                    Pay Range <i class="fas fa-sort"></i>
+                                </th>
                                 <th>Resume</th>
                                 <th class="text-right">Actions</th>
                             </tr>
@@ -64,6 +67,7 @@
                                     <td>{{ job.title or 'Empty' }}</td>
                                     <td>{{ job.company or 'Empty' }}</td>
                                     <td data-date="{{ job.apply_date.strftime('%Y-%m-%d') }}">{{ job.apply_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ job.pay_range or '-' }}</td>
                                     <td>
                                         {% if job.resume %}
                                             <span class="badge bg-info">{{ job.resume.title }}</span>
