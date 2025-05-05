@@ -126,6 +126,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get form elements
     const jobForm = document.getElementById('job-form');
     
+    // Setup table sorting
+    setupTableSorting();
+    
     // Initialize CKEditor instances
     function initializeEditors() {
         // Only initialize if the elements exist and haven't been initialized yet
@@ -293,11 +296,26 @@ document.addEventListener('DOMContentLoaded', function() {
             button.addEventListener('click', function() {
                 const jobId = this.getAttribute('data-id');
                 if (confirm('Are you sure you want to delete this job application?')) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/jobs/delete/${jobId}`;
-                    document.body.appendChild(form);
-                    form.submit();
+                    // Use fetch to make a POST request to delete the job
+                    fetch(`/jobs/delete/${jobId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // Reload the page to show the updated job list
+                            window.location.reload();
+                        } else {
+                            alert('Failed to delete job. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting job:', error);
+                        alert('An error occurred while deleting the job.');
+                    });
                 }
             });
         });
@@ -306,6 +324,86 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize delete listeners
     attachDeleteListeners();
     
+    // Table sorting functionality
+    function setupTableSorting() {
+        const sortHeaders = document.querySelectorAll('.sortable');
+        let currentSort = {
+            column: null,
+            direction: 'asc'
+        };
+        
+        sortHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                const sortBy = this.getAttribute('data-sort');
+                
+                // Toggle sort direction if clicking on the same column
+                if (currentSort.column === sortBy) {
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.column = sortBy;
+                    currentSort.direction = 'asc';
+                }
+                
+                // Remove sorting classes from all headers
+                sortHeaders.forEach(h => {
+                    h.classList.remove('asc', 'desc');
+                });
+                
+                // Add sorting class to current header
+                this.classList.add(currentSort.direction);
+                
+                // Perform the sorting
+                sortTable(sortBy, currentSort.direction);
+            });
+        });
+    }
+    
+    function sortTable(column, direction) {
+        const table = document.querySelector('.job-table');
+        const tbody = document.getElementById('job-table-body');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        
+        // Skip if no rows to sort (except header)
+        if (rows.length <= 1) return;
+        
+        // Sort the rows
+        const sortedRows = rows.sort((a, b) => {
+            let aValue, bValue;
+            
+            if (column === 'title') {
+                aValue = a.cells[0].textContent.trim().toLowerCase();
+                bValue = b.cells[0].textContent.trim().toLowerCase();
+            } else if (column === 'company') {
+                aValue = a.cells[1].textContent.trim().toLowerCase();
+                bValue = b.cells[1].textContent.trim().toLowerCase();
+            } else if (column === 'apply_date') {
+                // Get date from data attribute if it exists
+                aValue = a.cells[2].getAttribute('data-date') || a.cells[2].textContent.trim();
+                bValue = b.cells[2].getAttribute('data-date') || b.cells[2].textContent.trim();
+            } else {
+                return 0; // No sorting if column not recognized
+            }
+            
+            // Compare the values
+            if (aValue < bValue) return direction === 'asc' ? -1 : 1;
+            if (aValue > bValue) return direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+        
+        // Remove all existing rows
+        while (tbody.firstChild) {
+            tbody.removeChild(tbody.firstChild);
+        }
+        
+        // Add sorted rows
+        sortedRows.forEach(row => {
+            tbody.appendChild(row);
+        });
+        
+        // Re-attach event listeners
+        attachDeleteListeners();
+    }
+
     // Helper functions
     function debounce(func, delay) {
         let timeoutId;

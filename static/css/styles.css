@@ -100,6 +100,33 @@ body {
   border-top: none;
 }
 
+/* Sortable columns */
+.sortable {
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.sortable:hover {
+  background-color: #e3e9ec;
+}
+
+.sortable i.fa-sort {
+  font-size: 0.8rem;
+  margin-left: 5px;
+  color: #aaa;
+}
+
+.sortable.asc i.fa-sort:before {
+  content: "\f0de"; /* fa-sort-up */
+  color: var(--secondary-color);
+}
+
+.sortable.desc i.fa-sort:before {
+  content: "\f0dd"; /* fa-sort-down */
+  color: var(--secondary-color);
+}
+
 .job-table-container {
   overflow-x: auto;
 }
