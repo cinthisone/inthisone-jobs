@@ -2,7 +2,7 @@
 
 A comprehensive job application tracking platform designed to streamline the job search process through intelligent tools and user-friendly interfaces.
 
-![Inthisone Jobs Dashboard](attached_assets/image_1746411413168.png)
+![Inthisone Jobs Dashboard](attached_assets/job-tracker-screenshot.png)
 
 ## Features
 
