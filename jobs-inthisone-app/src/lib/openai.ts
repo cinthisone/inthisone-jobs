@@ -59,10 +59,18 @@ Return ONLY valid JSON, no markdown or explanation.`,
 }
 
 export async function generateCoverLetter(request: CoverLetterRequest): Promise<string> {
+  // Get current date formatted
+  const today = new Date();
+  const currentDate = today.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
   let systemPrompt = request.resumeContent
     ? `You are a professional cover letter writer. Write a compelling, personalized cover letter based on the job details and the candidate's resume. The letter should:
 - Start with the candidate's contact info header (name, address, phone, email from resume) formatted properly
-- Include today's date
+- Include the date "${currentDate}" (use this exact date, do not use any other date or placeholder)
 - Include the company name and "Hiring Manager" as recipient
 - Be professional but personable
 - Highlight relevant experience from the resume
@@ -73,7 +81,7 @@ export async function generateCoverLetter(request: CoverLetterRequest): Promise<
 - Do NOT wrap in markdown code blocks`
     : `You are a professional cover letter writer. Write a compelling cover letter template based on the job details. The letter should:
 - Start with placeholder header: [Your Name], [Your Address], [Phone], [Email]
-- Include today's date
+- Include the date "${currentDate}" (use this exact date, do not use any other date or placeholder)
 - Include the company name and "Hiring Manager" as recipient
 - Be professional but personable
 - Be adaptable for various candidates

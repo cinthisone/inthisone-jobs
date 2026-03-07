@@ -98,6 +98,11 @@ export default function ResumeForm({ resume, isEditing = false }: ResumeFormProp
           name="jobTitle"
           value={formData.jobTitle}
           onChange={handleChange}
+          onFocus={() => {
+            if (!formData.jobTitle && formData.title) {
+              setFormData((prev) => ({ ...prev, jobTitle: prev.title }));
+            }
+          }}
           required
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           placeholder="e.g. Senior Software Engineer"

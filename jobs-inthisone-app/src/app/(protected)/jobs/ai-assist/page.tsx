@@ -50,6 +50,12 @@ export default function AIAssistPage() {
         if (res.ok) {
           const data = await res.json();
           setResumes(data);
+
+          // Load last selected resume from localStorage
+          const lastResumeId = localStorage.getItem("lastSelectedResumeId");
+          if (lastResumeId && data.some((r: Resume) => r.id === lastResumeId)) {
+            setSelectedResumeId(lastResumeId);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch resumes:", error);
@@ -57,6 +63,13 @@ export default function AIAssistPage() {
     };
     fetchResumes();
   }, []);
+
+  // Save selected resume to localStorage when it changes
+  useEffect(() => {
+    if (selectedResumeId) {
+      localStorage.setItem("lastSelectedResumeId", selectedResumeId);
+    }
+  }, [selectedResumeId]);
 
   const handleParse = async () => {
     if (!jobText.trim()) {
@@ -377,13 +390,29 @@ export default function AIAssistPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Source
               </label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {["LinkedIn", "Indeed", "Glassdoor", "Company Website", "Referral", "ZipRecruiter"].map((src) => (
+                  <button
+                    key={src}
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, source: src }))}
+                    className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                      formData.source === src
+                        ? "bg-indigo-600 text-white border-indigo-600"
+                        : "bg-white text-gray-600 border-gray-300 hover:border-indigo-400 hover:text-indigo-600"
+                    }`}
+                  >
+                    {src}
+                  </button>
+                ))}
+              </div>
               <input
                 type="text"
                 name="source"
                 value={formData.source}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Indeed, LinkedIn, Company Website..."
+                placeholder="Or type a custom source..."
               />
             </div>
 
@@ -412,32 +441,112 @@ export default function AIAssistPage() {
               <label className="block text-sm font-medium text-gray-700">
                 Cover Letter
               </label>
-              <button
-                type="button"
-                onClick={() => {
-                  const textContent = formData.coverLetter.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
-                  navigator.clipboard.writeText(textContent);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-                className="inline-flex items-center px-3 py-1 text-sm text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-              >
-                {copied ? (
-                  <>
-                    <svg className="w-4 h-4 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-green-600">Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                    Copy to Clipboard
-                  </>
-                )}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const textContent = formData.coverLetter.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
+                    navigator.clipboard.writeText(textContent);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="inline-flex items-center px-3 py-1 text-sm text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                >
+                  {copied ? (
+                    <>
+                      <svg className="w-4 h-4 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-green-600">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      Copy
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const { jsPDF } = await import('jspdf');
+
+                      // Strip HTML tags and get plain text
+                      const textContent = formData.coverLetter
+                        .replace(/<br\s*\/?>/gi, '\n')
+                        .replace(/<\/p>/gi, '\n\n')
+                        .replace(/<[^>]*>/g, '')
+                        .replace(/&nbsp;/g, ' ')
+                        .replace(/&amp;/g, '&')
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&quot;/g, '"')
+                        .replace(/&#39;/g, "'")
+                        .trim();
+
+                      // Create PDF with letter size
+                      const doc = new jsPDF({
+                        unit: 'in',
+                        format: 'letter',
+                        orientation: 'portrait'
+                      });
+
+                      // Set font and margins
+                      const marginLeft = 1;
+                      const marginTop = 1;
+                      const pageWidth = 8.5;
+                      const pageHeight = 11;
+                      const maxWidth = pageWidth - 2; // 1 inch margins on each side
+                      const lineHeight = 0.2; // Tighter line spacing
+                      const paragraphSpacing = 0.15; // Extra space between paragraphs
+
+                      doc.setFont('times', 'normal');
+                      doc.setFontSize(12);
+
+                      // Split into paragraphs first, then process each
+                      const paragraphs = textContent.split(/\n\n+/);
+
+                      let y = marginTop;
+                      for (let i = 0; i < paragraphs.length; i++) {
+                        const para = paragraphs[i].trim();
+                        if (!para) continue;
+
+                        // Split paragraph into lines that fit within margins
+                        const lines = doc.splitTextToSize(para, maxWidth);
+
+                        for (const line of lines) {
+                          if (y > pageHeight - 1) {
+                            doc.addPage();
+                            y = marginTop;
+                          }
+                          doc.text(line, marginLeft, y);
+                          y += lineHeight;
+                        }
+
+                        // Add paragraph spacing after each paragraph (except the last)
+                        if (i < paragraphs.length - 1) {
+                          y += paragraphSpacing;
+                        }
+                      }
+
+                      const filename = `Cover_Letter_${(formData.company || 'Draft').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+                      doc.save(filename);
+                    } catch (err) {
+                      console.error('PDF generation error:', err);
+                      alert(`Failed to generate PDF: ${err instanceof Error ? err.message : String(err)}`);
+                    }
+                  }}
+                  className="inline-flex items-center px-3 py-1 text-sm text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download PDF
+                </button>
+              </div>
             </div>
             <RichTextEditor
               content={formData.coverLetter}
@@ -489,7 +598,8 @@ export default function AIAssistPage() {
             />
           </div>
 
-          <div className="flex justify-end gap-4">
+          {/* Floating Action buttons - sticky at bottom */}
+          <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-4 px-6 -mx-6 mt-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex justify-end gap-4 z-10">
             <button
               type="button"
               onClick={() => setIsParsed(false)}
