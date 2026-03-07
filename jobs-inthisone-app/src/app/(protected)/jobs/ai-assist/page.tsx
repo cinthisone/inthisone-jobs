@@ -391,7 +391,7 @@ export default function AIAssistPage() {
                 Source
               </label>
               <div className="flex flex-wrap gap-2 mb-2">
-                {["LinkedIn", "Indeed", "Glassdoor", "Company Website", "Referral", "ZipRecruiter"].map((src) => (
+                {["LinkedIn", "Indeed", "Glassdoor", "Company Website", "Referral", "ZipRecruiter", "BuiltIn"].map((src) => (
                   <button
                     key={src}
                     type="button"
