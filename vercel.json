@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd jobs-inthisone-app && npm run build",
-  "installCommand": "cd jobs-inthisone-app && npm install",
-  "framework": "nextjs",
-  "outputDirectory": "jobs-inthisone-app/.next"
-}
