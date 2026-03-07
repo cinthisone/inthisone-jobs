@@ -235,9 +235,76 @@ export default function JobForm({ job, isEditing = false }: JobFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Cover Letter
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Cover Letter
+          </label>
+          {formData.coverLetter && (
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const { jsPDF } = await import('jspdf');
+                  const textContent = formData.coverLetter
+                    .replace(/<br\s*\/?>/gi, '\n')
+                    .replace(/<\/p>/gi, '\n\n')
+                    .replace(/<[^>]*>/g, '')
+                    .replace(/&nbsp;/g, ' ')
+                    .replace(/&amp;/g, '&')
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&quot;/g, '"')
+                    .replace(/&#39;/g, "'")
+                    .trim();
+
+                  const doc = new jsPDF({ unit: 'in', format: 'letter', orientation: 'portrait' });
+                  const marginLeft = 1;
+                  const marginTop = 1;
+                  const pageWidth = 8.5;
+                  const pageHeight = 11;
+                  const maxWidth = pageWidth - 2;
+                  const lineHeight = 0.2;
+                  const paragraphSpacing = 0.15;
+
+                  doc.setFont('times', 'normal');
+                  doc.setFontSize(12);
+
+                  const paragraphs = textContent.split(/\n\n+/);
+                  let y = marginTop;
+
+                  for (let i = 0; i < paragraphs.length; i++) {
+                    const para = paragraphs[i].trim();
+                    if (!para) continue;
+                    const lines = doc.splitTextToSize(para, maxWidth);
+                    for (const line of lines) {
+                      if (y > pageHeight - 1) {
+                        doc.addPage();
+                        y = marginTop;
+                      }
+                      doc.text(line, marginLeft, y);
+                      y += lineHeight;
+                    }
+                    if (i < paragraphs.length - 1) {
+                      y += paragraphSpacing;
+                    }
+                  }
+
+                  const filename = `Cover_Letter_${(formData.company || 'Draft').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+                  doc.save(filename);
+                } catch (err) {
+                  console.error('PDF generation error:', err);
+                  alert(`Failed to generate PDF: ${err instanceof Error ? err.message : String(err)}`);
+                }
+              }}
+              className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Download PDF
+            </button>
+          )}
+        </div>
         <RichTextEditor
           content={formData.coverLetter}
           onChange={(content) => setFormData((prev) => ({ ...prev, coverLetter: content }))}
