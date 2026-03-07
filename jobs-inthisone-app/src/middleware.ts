@@ -5,7 +5,10 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check for session cookie (database sessions use authjs.session-token)
-  const sessionToken = request.cookies.get("authjs.session-token")?.value;
+  // In production with HTTPS, the cookie has __Secure- prefix
+  const sessionToken =
+    request.cookies.get("__Secure-authjs.session-token")?.value ||
+    request.cookies.get("authjs.session-token")?.value;
   const isLoggedIn = !!sessionToken;
 
   // Public routes that don't require auth

@@ -11,6 +11,7 @@ export const {
 } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "database" },
+  trustHost: true,
   ...authConfig,
   callbacks: {
     ...authConfig.callbacks,
