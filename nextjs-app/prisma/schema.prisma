@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Resume {
+  id        String   @id @default(cuid())
+  title     String
+  jobTitle  String?  @map("job_title")
+  content   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  jobs      Job[]
+
+  @@map("resumes")
+}
+
+model Job {
+  id          String    @id @default(cuid())
+  title       String
+  company     String
+  applyDate   DateTime? @map("apply_date")
+  description String?
+  coverLetter String?   @map("cover_letter")
+  payRange    String?   @map("pay_range")
+  jobUrl      String?   @map("job_url")
+  resumeId    String?   @map("resume_id")
+  resume      Resume?   @relation(fields: [resumeId], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("jobs")
+}
