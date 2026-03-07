@@ -1,67 +1,92 @@
 # Inthisone Jobs - Job Application Tracker
 
-A comprehensive job application tracking platform designed to streamline the job search process through intelligent tools and user-friendly interfaces.
-
-![Inthisone Jobs Dashboard](attached_assets/job-tracker-screenshot.png)
+A modern job application tracking platform built with Next.js 16, featuring AI-powered job parsing and cover letter generation.
 
 ## Features
 
 - **Job Application Tracking**: Keep track of all job applications in one centralized dashboard
-- **AI-Assisted Job Entry**: Extract job details automatically from job postings using OpenAI
+- **AI-Assisted Job Entry**: Automatically extract job details from job postings using OpenAI
+- **Cover Letter Generation**: Generate tailored cover letters based on job descriptions and your resume
 - **Resume Management**: Create and manage multiple resumes for different career paths
-- **Personalized Cover Letters**: Generate tailored cover letters based on job descriptions and your resume
-- **Rich Text Editing**: Format job descriptions and cover letters with full formatting capabilities
+- **Search & Sort**: Easily find and organize your job applications
+- **Responsive Design**: Works great on desktop and mobile devices
 
-## Technology Stack
+## Tech Stack
 
-- **Backend**: Python, Flask, SQLAlchemy
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Database**: PostgreSQL
-- **AI Integration**: OpenAI API for intelligent job analysis and content generation
-- **Rich Text Editing**: CKEditor for content formatting
+- **Framework**: Next.js 16 (App Router)
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: iron-session for secure session management
+- **AI Integration**: OpenAI GPT-4 for job parsing and cover letter generation
+- **Styling**: Tailwind CSS
 
-## Setup & Installation
+## Getting Started
 
-1. Clone the repository
-2. Install requirements: `pip install -r requirements.txt`
-3. Set up environment variables:
-   - `DATABASE_URL`: PostgreSQL database connection string
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL database (or use Vercel Postgres)
+- OpenAI API key
+
+### Installation
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Copy the environment file and configure:
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Update `.env` with your values:
+   - `DATABASE_URL`: Your PostgreSQL connection string
+   - `SESSION_SECRET`: A random 32+ character string
    - `OPENAI_API_KEY`: Your OpenAI API key
-   - `SESSION_SECRET`: Secret key for session management
 
-4. Run the application:
+4. Initialize the database:
+   ```bash
+   npx prisma db push
    ```
-   gunicorn --bind 0.0.0.0:5000 main:app
+
+5. Run the development server:
+   ```bash
+   npm run dev
    ```
 
-## Default Login
+6. Open [http://localhost:3000](http://localhost:3000) and complete the setup wizard.
 
-- Username: admin
-- Default Password: inthisonejobs2024
+## Deployment on Vercel
 
-(Change the password after first login)
-
-## Key Components
-
-- **Job Management**: Add, view, edit, and delete job applications
-- **Resume Management**: Create and manage multiple resumes
-- **Dashboard**: Visual overview of your job application status
-- **AI Assistant**: Automatically parse job postings to extract key information
+1. Push your code to a Git repository
+2. Import the project in Vercel
+3. Add the following environment variables:
+   - `DATABASE_URL`
+   - `DIRECT_URL` (for Vercel Postgres)
+   - `SESSION_SECRET`
+   - `OPENAI_API_KEY`
+4. Deploy!
 
 ## Project Structure
 
-- `app.py`: Main application configuration
-- `models.py`: Database models and relationships
-- `routes.py`: URL routes and request handlers
-- `forms.py`: Form definitions
-- `openai_service.py`: AI functionality using OpenAI
-- `templates/`: HTML templates for the web interface
-- `static/`: CSS, JavaScript, and other static assets
+```
+src/
+├── app/
+│   ├── (protected)/     # Authenticated routes
+│   │   ├── dashboard/   # Main dashboard
+│   │   ├── jobs/        # Job management pages
+│   │   └── resumes/     # Resume management pages
+│   ├── api/             # API routes
+│   ├── login/           # Login page
+│   └── setup/           # Initial setup wizard
+├── components/          # React components
+└── lib/                 # Utilities and configurations
+```
 
-## Version 1.0
+## Default Login
 
-Initial release with core functionality including:
-- Complete job application tracking system
-- AI-powered job parsing and cover letter generation
-- Resume management system with rich text editing
-- Job-resume association capabilities
+After initial setup, the default credentials are:
+- Username: admin
+- Password: inthisonejobs2024
+
+(Change the password after first login via the setup page)
