@@ -104,10 +104,12 @@ export default function AIAssistPage() {
       const fitData = data.fitAnalysis || { fitScore: "", tableHtml: "" };
       const whyData = data.whyCompanyAnswers || "";
       const qaData = data.interviewQA || [];
+      // Always use current date for apply date, don't trust AI-generated dates
+      const currentDate = new Date().toISOString().split("T")[0];
       setFormData({
         title: data.title || "",
         company: data.company || "",
-        applyDate: data.applyDate || new Date().toISOString().split("T")[0],
+        applyDate: currentDate,
         description: data.description || "",
         coverLetter: data.coverLetter || "",
         payRange: data.payRange || "",
