@@ -78,6 +78,7 @@ export async function generateCoverLetter(request: CoverLetterRequest): Promise<
 - Be 3-4 body paragraphs
 - End with a professional closing (Sincerely, followed by the candidate's name)
 - Return as clean HTML using <p> tags for paragraphs and <br> for line breaks in the header
+- IMPORTANT: Do NOT include empty paragraphs or excessive line breaks between sections. Keep spacing compact.
 - Do NOT wrap in markdown code blocks`
     : `You are a professional cover letter writer. Write a compelling cover letter template based on the job details. The letter should:
 - Start with placeholder header: [Your Name], [Your Address], [Phone], [Email]
@@ -89,6 +90,7 @@ export async function generateCoverLetter(request: CoverLetterRequest): Promise<
 - Be 3-4 body paragraphs
 - End with a professional closing
 - Return as clean HTML using <p> tags for paragraphs and <br> for line breaks in the header
+- IMPORTANT: Do NOT include empty paragraphs or excessive line breaks between sections. Keep spacing compact.
 - Do NOT wrap in markdown code blocks`;
 
   if (request.customInstructions) {
@@ -118,6 +120,23 @@ Job Description: ${request.jobDescription}`;
   let content = response.choices[0]?.message?.content || "Unable to generate cover letter.";
   // Strip markdown code blocks if present
   content = content.replace(/```html\n?/gi, '').replace(/```\n?/g, '').trim();
+
+  // Clean up excessive spacing in HTML
+  content = content
+    // Remove empty paragraphs
+    .replace(/<p>\s*<\/p>/gi, '')
+    .replace(/<p><br\s*\/?>\s*<\/p>/gi, '')
+    // Remove multiple consecutive <br> tags (keep max 1)
+    .replace(/(<br\s*\/?>)\s*(<br\s*\/?>)+/gi, '<br>')
+    // Remove <br> at start or end of paragraphs
+    .replace(/<p>\s*<br\s*\/?>/gi, '<p>')
+    .replace(/<br\s*\/?>\s*<\/p>/gi, '</p>')
+    // Clean up whitespace between tags
+    .replace(/>\s+</g, '><')
+    // Add back single space after closing tags for readability
+    .replace(/<\/p></g, '</p>\n<')
+    .trim();
+
   return content;
 }
 

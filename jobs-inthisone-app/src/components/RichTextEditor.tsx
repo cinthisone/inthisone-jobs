@@ -3,7 +3,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface RichTextEditorProps {
   content: string;
@@ -41,6 +41,9 @@ export default function RichTextEditor({
   placeholder,
   minHeight = "300px",
 }: RichTextEditorProps) {
+  const [showHtmlSource, setShowHtmlSource] = useState(false);
+  const [htmlSource, setHtmlSource] = useState(content);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -67,7 +70,11 @@ export default function RichTextEditor({
     if (editor && content !== editor.getHTML()) {
       editor.commands.setContent(content);
     }
-  }, [content, editor]);
+    // Also update HTML source when content changes externally
+    if (!showHtmlSource && content !== htmlSource) {
+      setHtmlSource(content);
+    }
+  }, [content, editor, showHtmlSource, htmlSource]);
 
   if (!editor) {
     return (
@@ -193,6 +200,23 @@ export default function RichTextEditor({
             <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
           </svg>
         </MenuButton>
+        <MenuButton
+          onClick={() => {
+            if (showHtmlSource) {
+              // Switching from HTML to WYSIWYG - apply changes
+              editor.commands.setContent(htmlSource);
+              onChange(htmlSource);
+            } else {
+              // Switching to HTML view - get current HTML
+              setHtmlSource(editor.getHTML());
+            }
+            setShowHtmlSource(!showHtmlSource);
+          }}
+          isActive={showHtmlSource}
+          title="Toggle HTML Source"
+        >
+          <span className="text-xs font-mono font-bold">HTML</span>
+        </MenuButton>
 
         <div className="w-px h-6 bg-gray-300 mx-1" />
 
@@ -216,7 +240,20 @@ export default function RichTextEditor({
       </div>
 
       {/* Editor content */}
-      <EditorContent editor={editor} />
+      {showHtmlSource ? (
+        <textarea
+          value={htmlSource}
+          onChange={(e) => {
+            setHtmlSource(e.target.value);
+            onChange(e.target.value);
+          }}
+          className="w-full px-4 py-3 font-mono text-sm focus:outline-none"
+          style={{ minHeight }}
+          placeholder={placeholder}
+        />
+      ) : (
+        <EditorContent editor={editor} />
+      )}
     </div>
   );
 }
