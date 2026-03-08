@@ -1,3 +1,10 @@
+export interface InterviewQuestion {
+  question: string;
+  answer: string;
+  storyExample: string;
+  skill: string;
+}
+
 export interface Job {
   id: string;
   title: string;
@@ -11,6 +18,7 @@ export interface Job {
   fitScore: string | null;
   fitAnalysisHtml: string | null;
   whyCompanyAnswers: string | null;
+  interviewQA: string | null; // JSON string of InterviewQuestion[]
   resumeId: string | null;
   resume?: {
     id: string;

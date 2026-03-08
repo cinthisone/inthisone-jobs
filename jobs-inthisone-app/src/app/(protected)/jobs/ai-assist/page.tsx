@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Resume } from "@/lib/types";
+import { Resume, InterviewQuestion } from "@/lib/types";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
@@ -27,6 +27,8 @@ export default function AIAssistPage() {
   const [copied, setCopied] = useState(false);
   const [fitAnalysis, setFitAnalysis] = useState({ fitScore: "", tableHtml: "" });
   const [whyCompanyAnswers, setWhyCompanyAnswers] = useState("");
+  const [interviewQA, setInterviewQA] = useState<InterviewQuestion[]>([]);
+  const [expandedQA, setExpandedQA] = useState<Set<number>>(new Set());
 
   const [formData, setFormData] = useState({
     title: "",
@@ -40,6 +42,7 @@ export default function AIAssistPage() {
     fitScore: "",
     fitAnalysisHtml: "",
     whyCompanyAnswers: "",
+    interviewQA: "",
     resumeId: "",
   });
 
@@ -100,6 +103,7 @@ export default function AIAssistPage() {
       const data = await res.json();
       const fitData = data.fitAnalysis || { fitScore: "", tableHtml: "" };
       const whyData = data.whyCompanyAnswers || "";
+      const qaData = data.interviewQA || [];
       setFormData({
         title: data.title || "",
         company: data.company || "",
@@ -112,10 +116,12 @@ export default function AIAssistPage() {
         fitScore: fitData.fitScore,
         fitAnalysisHtml: fitData.tableHtml,
         whyCompanyAnswers: whyData,
+        interviewQA: JSON.stringify(qaData),
         resumeId: selectedResumeId,
       });
       setFitAnalysis(fitData);
       setWhyCompanyAnswers(whyData);
+      setInterviewQA(qaData);
       setIsParsed(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -582,6 +588,74 @@ export default function AIAssistPage() {
                 className="prose prose-sm max-w-none text-gray-700"
                 dangerouslySetInnerHTML={{ __html: whyCompanyAnswers }}
               />
+            </div>
+          )}
+
+          {/* Interview Q&A Section */}
+          {interviewQA.length > 0 && (
+            <div className="bg-purple-50 rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Interview Questions & Answers ({interviewQA.length} questions)
+              </h3>
+              <div className="space-y-3">
+                {interviewQA.map((qa, index) => (
+                  <div key={index} className="bg-white rounded-lg border border-purple-200 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newExpanded = new Set(expandedQA);
+                        if (newExpanded.has(index)) {
+                          newExpanded.delete(index);
+                        } else {
+                          newExpanded.add(index);
+                        }
+                        setExpandedQA(newExpanded);
+                      }}
+                      className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-purple-50 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <span className="inline-block px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 rounded mr-2">
+                          {qa.skill}
+                        </span>
+                        <span className="text-gray-900 font-medium">{qa.question}</span>
+                      </div>
+                      <svg
+                        className={`w-5 h-5 text-gray-500 transition-transform ${expandedQA.has(index) ? 'rotate-180' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {expandedQA.has(index) && (
+                      <div className="px-4 pb-4 border-t border-purple-100">
+                        <div className="mt-3">
+                          <h4 className="text-sm font-semibold text-purple-700 mb-2">Answer:</h4>
+                          <p className="text-gray-700 text-sm">{qa.answer}</p>
+                        </div>
+                        <div className="mt-4 bg-purple-50 rounded-lg p-4">
+                          <h4 className="text-sm font-semibold text-purple-700 mb-2">Example Story (STAR Format):</h4>
+                          <p className="text-gray-700 text-sm whitespace-pre-wrap">{qa.storyExample}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (expandedQA.size === interviewQA.length) {
+                    setExpandedQA(new Set());
+                  } else {
+                    setExpandedQA(new Set(interviewQA.map((_, i) => i)));
+                  }
+                }}
+                className="mt-4 text-sm text-purple-600 hover:text-purple-800 font-medium"
+              >
+                {expandedQA.size === interviewQA.length ? 'Collapse All' : 'Expand All'}
+              </button>
             </div>
           )}
 

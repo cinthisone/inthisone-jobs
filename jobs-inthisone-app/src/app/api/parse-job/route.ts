@@ -6,6 +6,7 @@ import {
   generateCoverLetter,
   generateFitAnalysis,
   generateWhyCompanyAnswers,
+  generateInterviewQA,
 } from "@/lib/openai";
 import prisma from "@/lib/prisma";
 
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest) {
     let coverLetter = "";
     let fitAnalysis = { fitScore: "", tableHtml: "" };
     let whyCompanyAnswers = "";
+    let interviewQA: { question: string; answer: string; storyExample: string; skill: string }[] = [];
 
     let resumeContent: string | undefined;
 
@@ -91,16 +93,18 @@ export async function POST(request: NextRequest) {
 
     if (generateCover) {
       // Run all AI generations in parallel for speed
-      const [coverLetterResult, fitAnalysisResult, whyCompanyResult] =
+      const [coverLetterResult, fitAnalysisResult, whyCompanyResult, interviewQAResult] =
         await Promise.all([
           generateCoverLetter(requestData),
           generateFitAnalysis(requestData),
           generateWhyCompanyAnswers(requestData),
+          generateInterviewQA(requestData),
         ]);
 
       coverLetter = replaceDatePlaceholders(coverLetterResult);
       fitAnalysis = fitAnalysisResult;
       whyCompanyAnswers = whyCompanyResult;
+      interviewQA = interviewQAResult;
     }
 
     return NextResponse.json({
@@ -108,6 +112,7 @@ export async function POST(request: NextRequest) {
       coverLetter,
       fitAnalysis,
       whyCompanyAnswers,
+      interviewQA,
     });
   } catch (error) {
     console.error("Parse job error:", error);

@@ -237,3 +237,57 @@ ${request.resumeContent ? `\nCandidate Resume:\n${request.resumeContent}` : ''}`
   content = content.replace(/```html\n?/gi, '').replace(/```\n?/g, '').trim();
   return content;
 }
+
+export interface InterviewQAItem {
+  question: string;
+  answer: string;
+  storyExample: string;
+  skill: string;
+}
+
+export async function generateInterviewQA(request: CoverLetterRequest): Promise<InterviewQAItem[]> {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      {
+        role: "system",
+        content: `You are an interview preparation expert. Analyze the job description to identify the key requirements and skills they're looking for.
+
+Generate 7-12 interview questions that an interviewer might ask based on these requirements. For each question:
+1. Identify the specific skill/requirement being tested
+2. Provide a strong answer that demonstrates competency
+3. Provide a STAR-format story example (Situation, Task, Action, Result) from past project experience that demonstrates this skill
+
+${request.resumeContent ? "Use the candidate's resume to personalize the answers and story examples based on their actual experience." : "Create realistic and compelling story examples."}
+
+Return a JSON array with this structure:
+[
+  {
+    "skill": "The skill/requirement being tested",
+    "question": "The interview question",
+    "answer": "A direct, confident answer (2-3 sentences)",
+    "storyExample": "A STAR-format story example (Situation: ..., Task: ..., Action: ..., Result: ...) that demonstrates this skill in a real project context. Make it specific and detailed."
+  }
+]
+
+Return ONLY valid JSON, no markdown code blocks or explanation.`
+      },
+      {
+        role: "user",
+        content: `Job Title: ${request.jobTitle}
+Company: ${request.company}
+Job Description: ${request.jobDescription}
+${request.resumeContent ? `\nCandidate Resume:\n${request.resumeContent}` : ''}`
+      }
+    ],
+    temperature: 0.7,
+  });
+
+  const content = response.choices[0]?.message?.content || "[]";
+  try {
+    const cleaned = content.replace(/```json\n?|```\n?/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch {
+    return [];
+  }
+}

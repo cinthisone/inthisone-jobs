@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Job, Resume } from "@/lib/types";
+import { Job, Resume, InterviewQuestion } from "@/lib/types";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
@@ -35,9 +35,11 @@ export default function JobForm({ job, isEditing = false }: JobFormProps) {
     fitScore: job?.fitScore || "",
     fitAnalysisHtml: job?.fitAnalysisHtml || "",
     whyCompanyAnswers: job?.whyCompanyAnswers || "",
+    interviewQA: job?.interviewQA || "",
     resumeId: job?.resumeId || "",
   });
   const [error, setError] = useState("");
+  const [expandedQA, setExpandedQA] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const fetchResumes = async () => {
@@ -343,6 +345,88 @@ export default function JobForm({ job, isEditing = false }: JobFormProps) {
           />
         </div>
       )}
+
+      {/* Interview Q&A Section */}
+      {formData.interviewQA && (() => {
+        let qaList: InterviewQuestion[] = [];
+        try {
+          qaList = JSON.parse(formData.interviewQA);
+        } catch {
+          qaList = [];
+        }
+        if (qaList.length === 0) return null;
+
+        return (
+          <div className="bg-purple-50 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                Interview Questions & Answers ({qaList.length} questions)
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  if (expandedQA.size === qaList.length) {
+                    setExpandedQA(new Set());
+                  } else {
+                    setExpandedQA(new Set(qaList.map((_, i) => i)));
+                  }
+                }}
+                className="text-sm text-purple-600 hover:text-purple-800"
+              >
+                {expandedQA.size === qaList.length ? "Collapse All" : "Expand All"}
+              </button>
+            </div>
+            <div className="space-y-3">
+              {qaList.map((qa, index) => (
+                <div key={index} className="bg-white rounded-lg border border-purple-200 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newExpanded = new Set(expandedQA);
+                      if (newExpanded.has(index)) {
+                        newExpanded.delete(index);
+                      } else {
+                        newExpanded.add(index);
+                      }
+                      setExpandedQA(newExpanded);
+                    }}
+                    className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-purple-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full font-medium whitespace-nowrap">
+                        {qa.skill}
+                      </span>
+                      <span className="text-gray-800 font-medium truncate">{qa.question}</span>
+                    </div>
+                    <svg
+                      className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 ${
+                        expandedQA.has(index) ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {expandedQA.has(index) && (
+                    <div className="px-4 pb-4 border-t border-purple-100">
+                      <div className="mt-3">
+                        <h4 className="text-sm font-semibold text-purple-800 mb-2">Answer:</h4>
+                        <p className="text-gray-700 text-sm whitespace-pre-wrap">{qa.answer}</p>
+                      </div>
+                      <div className="mt-4">
+                        <h4 className="text-sm font-semibold text-purple-800 mb-2">Example Story (STAR Format):</h4>
+                        <p className="text-gray-700 text-sm whitespace-pre-wrap bg-purple-50 p-3 rounded-lg">{qa.storyExample}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="flex justify-end gap-4">
         <button

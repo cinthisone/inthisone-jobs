@@ -87,6 +87,7 @@ export async function PUT(
         fitScore: data.fitScore,
         fitAnalysisHtml: data.fitAnalysisHtml,
         whyCompanyAnswers: data.whyCompanyAnswers,
+        interviewQA: data.interviewQA,
         resumeId: data.resumeId || null,
       },
       include: {

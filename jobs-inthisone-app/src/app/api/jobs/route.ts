@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
         fitScore: data.fitScore,
         fitAnalysisHtml: data.fitAnalysisHtml,
         whyCompanyAnswers: data.whyCompanyAnswers,
+        interviewQA: data.interviewQA,
         resumeId: data.resumeId || null,
       },
       include: {

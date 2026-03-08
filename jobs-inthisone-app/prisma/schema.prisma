@@ -134,6 +134,7 @@ model Job {
   fitScore          String?   @map("fit_score")
   fitAnalysisHtml   String?   @map("fit_analysis_html")
   whyCompanyAnswers String?   @map("why_company_answers")
+  interviewQA       String?   @map("interview_qa") // JSON string of interview questions/answers
   resumeId          String?   @map("resume_id")
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
