@@ -17,10 +17,10 @@ export const authConfig: NextAuthConfig = {
       const isLoggedIn = !!auth?.user;
       const pathname = nextUrl.pathname;
 
-      // Public routes
-      const publicRoutes = ["/login", "/api/auth"];
+      // Public routes (landing page, login, auth API)
+      const publicRoutes = ["/", "/login", "/api/auth"];
       const isPublicRoute = publicRoutes.some((route) =>
-        pathname.startsWith(route)
+        pathname === route || (route !== "/" && pathname.startsWith(route))
       );
 
       // API routes handle their own auth
@@ -28,12 +28,9 @@ export const authConfig: NextAuthConfig = {
         return true;
       }
 
-      // Redirect root to dashboard or login
+      // Root path: let middleware handle redirect for logged-in users
       if (pathname === "/") {
-        if (isLoggedIn) {
-          return Response.redirect(new URL("/dashboard", nextUrl));
-        }
-        return Response.redirect(new URL("/login", nextUrl));
+        return true;
       }
 
       // Allow public routes

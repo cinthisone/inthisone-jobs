@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
@@ -11,16 +12,17 @@ interface NavbarProps {
     email?: string | null;
     image?: string | null;
   };
+  onHelpClick?: () => void;
 }
 
-export default function Navbar({ user }: NavbarProps) {
+export default function Navbar({ user, onHelpClick }: NavbarProps) {
   const pathname = usePathname();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
-    await signOut({ callbackUrl: "/login" });
+    await signOut({ callbackUrl: "/" });
   };
 
   const displayName = user.name || user.email?.split("@")[0] || "User";
@@ -42,9 +44,14 @@ export default function Navbar({ user }: NavbarProps) {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/dashboard" className="flex items-center">
-              <span className="text-xl font-bold text-indigo-600">
-                Inthisone Jobs
-              </span>
+              <Image
+                src="/images/inthisone-jobs-logo.png"
+                alt="Inthisone Jobs"
+                width={160}
+                height={53}
+                className="h-10 w-auto"
+                priority
+              />
             </Link>
             <div className="hidden sm:ml-8 sm:flex sm:space-x-4">
               {navLinks.map((link) => (
@@ -63,6 +70,18 @@ export default function Navbar({ user }: NavbarProps) {
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            {/* Help button */}
+            {onHelpClick && (
+              <button
+                onClick={onHelpClick}
+                className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-90 transition-opacity shadow-md"
+                title="How to use this app"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            )}
             <span className="hidden sm:inline text-sm text-gray-500">
               Welcome, <span className="font-medium">{displayName}</span>
             </span>
@@ -123,6 +142,20 @@ export default function Navbar({ user }: NavbarProps) {
                 {link.label}
               </Link>
             ))}
+            {onHelpClick && (
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onHelpClick();
+                }}
+                className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                How to Use
+              </button>
+            )}
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}

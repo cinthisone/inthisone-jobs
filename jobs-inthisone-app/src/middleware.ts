@@ -11,21 +11,24 @@ export function middleware(request: NextRequest) {
     request.cookies.get("authjs.session-token")?.value;
   const isLoggedIn = !!sessionToken;
 
-  // Public routes that don't require auth
-  const publicRoutes = ["/login", "/api/auth"];
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
+  // Public routes that don't require auth (landing page, login, auth API, legal pages)
+  const publicRoutes = ["/", "/login", "/privacy", "/terms", "/api/auth"];
+  const isPublicRoute = publicRoutes.some((route) =>
+    pathname === route || (route !== "/" && pathname.startsWith(route))
+  );
 
   // API routes handle their own auth
   if (pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 
-  // Redirect root to dashboard or login
+  // Root path: redirect logged-in users to dashboard, show landing page otherwise
   if (pathname === "/") {
     if (isLoggedIn) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-    return NextResponse.redirect(new URL("/login", request.url));
+    // Let page.tsx handle rendering the landing page
+    return NextResponse.next();
   }
 
   // Allow public routes
@@ -47,6 +50,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|api/stripe/webhook|api/cron).*)",
+    "/((?!_next/static|_next/image|favicon.ico|images|api/stripe/webhook|api/cron).*)",
   ],
 };

@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 function LoginContent() {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,9 +21,16 @@ function LoginContent() {
       <div className="max-w-md w-full">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           {/* Hero section */}
-          <div className="relative h-48 bg-gradient-to-r from-indigo-600 to-purple-600">
+          <div className="relative h-56 bg-gradient-to-r from-indigo-600 to-purple-600">
             <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6">
-              <h1 className="text-3xl font-bold mb-2">Inthisone Jobs</h1>
+              <Image
+                src="/images/inthisone-jobs-logo.png"
+                alt="Inthisone Jobs"
+                width={200}
+                height={67}
+                className="mb-4 brightness-0 invert"
+                priority
+              />
               <p className="text-center text-indigo-100">
                 Track your job applications with AI-powered assistance
               </p>
@@ -32,10 +40,10 @@ function LoginContent() {
           {/* Login section */}
           <div className="p-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-2 text-center">
-              Welcome
+              Get Started
             </h2>
             <p className="text-gray-600 text-center mb-6">
-              Sign in to manage your job applications
+              Sign in or create an account to manage your job applications
             </p>
 
             {error && (
@@ -82,10 +90,16 @@ function LoginContent() {
             <div className="mt-8 pt-6 border-t border-gray-200">
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-2">
-                  New users get a <span className="font-semibold text-indigo-600">60-day free trial</span>
+                  New users get a <span className="font-semibold text-indigo-600">30-day free trial</span>
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 mb-2">
                   Then $10/month to continue using all features
+                </p>
+                <p className="text-xs text-emerald-600 flex items-center justify-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  No credit card required to get started
                 </p>
               </div>
             </div>
