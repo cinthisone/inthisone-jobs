@@ -84,6 +84,11 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json();
 
+    console.log("Creating job with data:", {
+      ...data,
+      interviewQA: data.interviewQA ? `[${data.interviewQA.length} chars]` : null,
+    });
+
     const job = await prisma.job.create({
       data: {
         userId: session.user.id, // Add userId
@@ -97,8 +102,8 @@ export async function POST(request: NextRequest) {
         source: data.source,
         fitScore: data.fitScore,
         fitAnalysisHtml: data.fitAnalysisHtml,
-        whyCompanyAnswers: data.whyCompanyAnswers,
-        interviewQA: data.interviewQA,
+        whyCompanyAnswers: data.whyCompanyAnswers || null,
+        interviewQA: data.interviewQA || null,
         resumeId: data.resumeId || null,
       },
       include: {
@@ -111,8 +116,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(job, { status: 201 });
   } catch (error) {
     console.error("Create job error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to create job" },
+      { error: `Failed to create job: ${errorMessage}` },
       { status: 500 }
     );
   }
