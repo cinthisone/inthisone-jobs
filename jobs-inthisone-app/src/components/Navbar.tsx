@@ -11,6 +11,7 @@ interface NavbarProps {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    role?: string | null;
   };
   onHelpClick?: () => void;
 }
@@ -36,6 +37,7 @@ export default function Navbar({ user, onHelpClick }: NavbarProps) {
     { href: "/resumes", label: "Resumes" },
     { href: "/notes", label: "Notes" },
     { href: "/billing", label: "Billing" },
+    ...(user.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),
   ];
 
   return (

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import Navbar from "@/components/Navbar";
+import { prisma } from "@/lib/prisma";
+import AppShell from "@/components/AppShell";
 
 export default async function ProtectedLayout({
   children,
@@ -9,16 +10,20 @@ export default async function ProtectedLayout({
 }) {
   const session = await auth();
 
-  if (!session?.user) {
+  if (!session?.user?.id) {
     redirect("/login");
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar user={session.user} />
-      <main className="w-full max-w-[1600px] mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {children}
-      </main>
-    </div>
-  );
+  // Fetch user's role from database
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+
+  const userWithRole = {
+    ...session.user,
+    role: dbUser?.role || "user",
+  };
+
+  return <AppShell user={userWithRole}>{children}</AppShell>;
 }
