@@ -19,6 +19,7 @@ export interface Job {
   fitAnalysisHtml: string | null;
   whyCompanyAnswers: string | null;
   interviewQA: string | null; // JSON string of InterviewQuestion[]
+  favorite: boolean;
   resumeId: string | null;
   resume?: {
     id: string;

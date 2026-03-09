@@ -14,9 +14,11 @@ interface NavbarProps {
     role?: string | null;
   };
   onHelpClick?: () => void;
+  showResumeTooltip?: boolean;
+  onDismissResumeTooltip?: () => void;
 }
 
-export default function Navbar({ user, onHelpClick }: NavbarProps) {
+export default function Navbar({ user, onHelpClick, showResumeTooltip, onDismissResumeTooltip }: NavbarProps) {
   const pathname = usePathname();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -57,17 +59,49 @@ export default function Navbar({ user, onHelpClick }: NavbarProps) {
             </Link>
             <div className="hidden sm:ml-8 sm:flex sm:space-x-4">
               {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(link.href) || (link.href !== "/dashboard" && pathname.startsWith(link.href.split("/").slice(0, 2).join("/")))
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                  }`}
-                >
-                  {link.label}
-                </Link>
+                <div key={link.href} className="relative">
+                  <Link
+                    href={link.href}
+                    onClick={() => {
+                      if (link.href === "/resumes" && showResumeTooltip) {
+                        onDismissResumeTooltip?.();
+                      }
+                    }}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActive(link.href) || (link.href !== "/dashboard" && pathname.startsWith(link.href.split("/").slice(0, 2).join("/")))
+                        ? "bg-indigo-100 text-indigo-700"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                  {/* Resume tooltip */}
+                  {link.href === "/resumes" && showResumeTooltip && (
+                    <div className="absolute left-0 top-full mt-2 z-50">
+                      <div className="relative bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg shadow-lg whitespace-nowrap animate-bounce-subtle-no-transform">
+                        <div className="absolute -top-2 left-6 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-indigo-600"></div>
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          <span>Start here! Add a resume first</span>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onDismissResumeTooltip?.();
+                            }}
+                            className="ml-2 hover:bg-indigo-700 rounded p-0.5"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>

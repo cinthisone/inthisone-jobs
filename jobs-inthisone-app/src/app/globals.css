@@ -231,3 +231,30 @@ button:focus-visible {
 .landing-gradient {
   background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
 }
+
+/* Tooltip animation */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-4px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+@keyframes bounce-subtle-no-transform {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-bounce-subtle-no-transform {
+  animation: bounce-subtle-no-transform 2s ease-in-out infinite;
+}

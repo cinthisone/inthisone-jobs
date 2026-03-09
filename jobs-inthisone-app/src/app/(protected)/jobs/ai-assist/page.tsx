@@ -22,6 +22,7 @@ export default function AIAssistPage() {
   const [generateCover, setGenerateCover] = useState(true);
   const [customInstructions, setCustomInstructions] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingQA, setIsGeneratingQA] = useState(false);
   const [isParsed, setIsParsed] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -165,6 +166,45 @@ export default function AIAssistPage() {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGenerateInterviewQA = async () => {
+    if (!formData.description) {
+      setError("Job description is required to generate interview questions");
+      return;
+    }
+
+    setIsGeneratingQA(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/generate-interview-qa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobTitle: formData.title,
+          company: formData.company,
+          jobDescription: formData.description,
+          resumeId: formData.resumeId || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to generate interview questions");
+      }
+
+      const data = await res.json();
+      setInterviewQA(data.interviewQA);
+      setFormData((prev) => ({
+        ...prev,
+        interviewQA: JSON.stringify(data.interviewQA),
+      }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsGeneratingQA(false);
     }
   };
 
@@ -594,11 +634,58 @@ export default function AIAssistPage() {
           )}
 
           {/* Interview Q&A Section */}
-          {interviewQA.length > 0 && (
-            <div className="bg-purple-50 rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Interview Questions & Answers ({interviewQA.length} questions)
+          <div className="bg-purple-50 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                Interview Questions & Answers {interviewQA.length > 0 && `(${interviewQA.length} questions)`}
               </h3>
+              <div className="flex items-center gap-3">
+                {interviewQA.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (expandedQA.size === interviewQA.length) {
+                        setExpandedQA(new Set());
+                      } else {
+                        setExpandedQA(new Set(interviewQA.map((_, i) => i)));
+                      }
+                    }}
+                    className="text-sm text-purple-600 hover:text-purple-800"
+                  >
+                    {expandedQA.size === interviewQA.length ? "Collapse All" : "Expand All"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleGenerateInterviewQA}
+                  disabled={isGeneratingQA}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {isGeneratingQA ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      {interviewQA.length > 0 ? "Regenerate" : "Generate AI Questions"}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {interviewQA.length === 0 ? (
+              <p className="text-gray-500 text-sm">
+                No interview questions generated yet. Click &quot;Generate AI Questions&quot; to create interview preparation questions based on the job description.
+              </p>
+            ) : (
               <div className="space-y-3">
                 {interviewQA.map((qa, index) => (
                   <div key={index} className="bg-white rounded-lg border border-purple-200 overflow-hidden">
@@ -645,21 +732,8 @@ export default function AIAssistPage() {
                   </div>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (expandedQA.size === interviewQA.length) {
-                    setExpandedQA(new Set());
-                  } else {
-                    setExpandedQA(new Set(interviewQA.map((_, i) => i)));
-                  }
-                }}
-                className="mt-4 text-sm text-purple-600 hover:text-purple-800 font-medium"
-              >
-                {expandedQA.size === interviewQA.length ? 'Collapse All' : 'Expand All'}
-              </button>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Job Description - at the bottom */}
           <div>

@@ -22,6 +22,7 @@ interface JobFormProps {
 export default function JobForm({ job, isEditing = false }: JobFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingQA, setIsGeneratingQA] = useState(false);
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [formData, setFormData] = useState({
     title: job?.title || "",
@@ -37,6 +38,7 @@ export default function JobForm({ job, isEditing = false }: JobFormProps) {
     whyCompanyAnswers: job?.whyCompanyAnswers || "",
     interviewQA: job?.interviewQA || "",
     resumeId: job?.resumeId || "",
+    favorite: job?.favorite || false,
   });
   const [error, setError] = useState("");
   const [expandedQA, setExpandedQA] = useState<Set<number>>(new Set());
@@ -92,6 +94,45 @@ export default function JobForm({ job, isEditing = false }: JobFormProps) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGenerateInterviewQA = async () => {
+    if (!formData.description) {
+      setError("Job description is required to generate interview questions");
+      return;
+    }
+
+    setIsGeneratingQA(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/generate-interview-qa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobId: job?.id,
+          jobTitle: formData.title,
+          company: formData.company,
+          jobDescription: formData.description,
+          resumeId: formData.resumeId || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to generate interview questions");
+      }
+
+      const data = await res.json();
+      setFormData((prev) => ({
+        ...prev,
+        interviewQA: JSON.stringify(data.interviewQA),
+      }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsGeneratingQA(false);
     }
   };
 
@@ -222,6 +263,35 @@ export default function JobForm({ job, isEditing = false }: JobFormProps) {
             ))}
           </select>
         </div>
+
+        <div className="flex items-center">
+          <button
+            type="button"
+            onClick={() => setFormData((prev) => ({ ...prev, favorite: !prev.favorite }))}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+              formData.favorite
+                ? "bg-yellow-100 border-yellow-400 text-yellow-700"
+                : "border-gray-300 text-gray-500 hover:bg-gray-50"
+            }`}
+          >
+            <svg
+              className="w-5 h-5"
+              fill={formData.favorite ? "currentColor" : "none"}
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+              />
+            </svg>
+            <span className="text-sm font-medium">
+              {formData.favorite ? "Favorited" : "Mark as Favorite"}
+            </span>
+          </button>
+        </div>
       </div>
 
       <div>
@@ -347,83 +417,118 @@ export default function JobForm({ job, isEditing = false }: JobFormProps) {
       )}
 
       {/* Interview Q&A Section */}
-      {formData.interviewQA && (() => {
+      {(() => {
         let qaList: InterviewQuestion[] = [];
-        try {
-          qaList = JSON.parse(formData.interviewQA);
-        } catch {
-          qaList = [];
+        if (formData.interviewQA) {
+          try {
+            qaList = JSON.parse(formData.interviewQA);
+          } catch {
+            qaList = [];
+          }
         }
-        if (qaList.length === 0) return null;
 
         return (
           <div className="bg-purple-50 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900">
-                Interview Questions & Answers ({qaList.length} questions)
+                Interview Questions & Answers {qaList.length > 0 && `(${qaList.length} questions)`}
               </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  if (expandedQA.size === qaList.length) {
-                    setExpandedQA(new Set());
-                  } else {
-                    setExpandedQA(new Set(qaList.map((_, i) => i)));
-                  }
-                }}
-                className="text-sm text-purple-600 hover:text-purple-800"
-              >
-                {expandedQA.size === qaList.length ? "Collapse All" : "Expand All"}
-              </button>
-            </div>
-            <div className="space-y-3">
-              {qaList.map((qa, index) => (
-                <div key={index} className="bg-white rounded-lg border border-purple-200 overflow-hidden">
+              <div className="flex items-center gap-3">
+                {qaList.length > 0 && (
                   <button
                     type="button"
                     onClick={() => {
-                      const newExpanded = new Set(expandedQA);
-                      if (newExpanded.has(index)) {
-                        newExpanded.delete(index);
+                      if (expandedQA.size === qaList.length) {
+                        setExpandedQA(new Set());
                       } else {
-                        newExpanded.add(index);
+                        setExpandedQA(new Set(qaList.map((_, i) => i)));
                       }
-                      setExpandedQA(newExpanded);
                     }}
-                    className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-purple-50 transition-colors"
+                    className="text-sm text-purple-600 hover:text-purple-800"
                   >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full font-medium whitespace-nowrap">
-                        {qa.skill}
-                      </span>
-                      <span className="text-gray-800 font-medium truncate">{qa.question}</span>
-                    </div>
-                    <svg
-                      className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 ${
-                        expandedQA.has(index) ? "rotate-180" : ""
-                      }`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    {expandedQA.size === qaList.length ? "Collapse All" : "Expand All"}
                   </button>
-                  {expandedQA.has(index) && (
-                    <div className="px-4 pb-4 border-t border-purple-100">
-                      <div className="mt-3">
-                        <h4 className="text-sm font-semibold text-purple-800 mb-2">Answer:</h4>
-                        <p className="text-gray-700 text-sm whitespace-pre-wrap">{qa.answer}</p>
-                      </div>
-                      <div className="mt-4">
-                        <h4 className="text-sm font-semibold text-purple-800 mb-2">Example Story (STAR Format):</h4>
-                        <p className="text-gray-700 text-sm whitespace-pre-wrap bg-purple-50 p-3 rounded-lg">{qa.storyExample}</p>
-                      </div>
-                    </div>
+                )}
+                <button
+                  type="button"
+                  onClick={handleGenerateInterviewQA}
+                  disabled={isGeneratingQA}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {isGeneratingQA ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      {qaList.length > 0 ? "Regenerate" : "Generate AI Questions"}
+                    </>
                   )}
-                </div>
-              ))}
+                </button>
+              </div>
             </div>
+
+            {qaList.length === 0 ? (
+              <p className="text-gray-500 text-sm">
+                No interview questions generated yet. Click &quot;Generate AI Questions&quot; to create interview preparation questions based on the job description.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {qaList.map((qa, index) => (
+                  <div key={index} className="bg-white rounded-lg border border-purple-200 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newExpanded = new Set(expandedQA);
+                        if (newExpanded.has(index)) {
+                          newExpanded.delete(index);
+                        } else {
+                          newExpanded.add(index);
+                        }
+                        setExpandedQA(newExpanded);
+                      }}
+                      className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-purple-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full font-medium whitespace-nowrap">
+                          {qa.skill}
+                        </span>
+                        <span className="text-gray-800 font-medium truncate">{qa.question}</span>
+                      </div>
+                      <svg
+                        className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 ${
+                          expandedQA.has(index) ? "rotate-180" : ""
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {expandedQA.has(index) && (
+                      <div className="px-4 pb-4 border-t border-purple-100">
+                        <div className="mt-3">
+                          <h4 className="text-sm font-semibold text-purple-800 mb-2">Answer:</h4>
+                          <p className="text-gray-700 text-sm whitespace-pre-wrap">{qa.answer}</p>
+                        </div>
+                        <div className="mt-4">
+                          <h4 className="text-sm font-semibold text-purple-800 mb-2">Example Story (STAR Format):</h4>
+                          <p className="text-gray-700 text-sm whitespace-pre-wrap bg-purple-50 p-3 rounded-lg">{qa.storyExample}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         );
       })()}

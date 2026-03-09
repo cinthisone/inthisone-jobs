@@ -88,6 +88,7 @@ export async function PUT(
         fitAnalysisHtml: data.fitAnalysisHtml,
         whyCompanyAnswers: data.whyCompanyAnswers,
         interviewQA: data.interviewQA,
+        favorite: data.favorite ?? undefined,
         resumeId: data.resumeId || null,
       },
       include: {
@@ -146,6 +147,46 @@ export async function DELETE(
     console.error("Delete job error:", error);
     return NextResponse.json(
       { error: "Failed to delete job" },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH - Toggle favorite status
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    // Verify ownership
+    const existingJob = await prisma.job.findFirst({
+      where: { id, userId: session.user.id },
+    });
+
+    if (!existingJob) {
+      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+
+    // Toggle the favorite status
+    const job = await prisma.job.update({
+      where: { id },
+      data: {
+        favorite: !existingJob.favorite,
+      },
+    });
+
+    return NextResponse.json({ favorite: job.favorite });
+  } catch (error) {
+    console.error("Toggle favorite error:", error);
+    return NextResponse.json(
+      { error: "Failed to toggle favorite" },
       { status: 500 }
     );
   }

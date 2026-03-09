@@ -104,6 +104,7 @@ export async function POST(request: NextRequest) {
         fitAnalysisHtml: data.fitAnalysisHtml,
         whyCompanyAnswers: data.whyCompanyAnswers || null,
         interviewQA: data.interviewQA || null,
+        favorite: data.favorite || false,
         resumeId: data.resumeId || null,
       },
       include: {

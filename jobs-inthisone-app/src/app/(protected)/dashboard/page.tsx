@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Job } from "@/lib/types";
+import { Job, InterviewQuestion } from "@/lib/types";
 
 export default function DashboardPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -10,6 +10,9 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState("applyDate");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [selectedJobForQA, setSelectedJobForQA] = useState<Job | null>(null);
+  const [expandedQA, setExpandedQA] = useState<Set<number>>(new Set());
 
   const fetchJobs = async () => {
     setIsLoading(true);
@@ -57,6 +60,18 @@ export default function DashboardPage() {
     }
   };
 
+  const handleToggleFavorite = async (id: string) => {
+    try {
+      const res = await fetch(`/api/jobs/${id}`, { method: "PATCH" });
+      if (res.ok) {
+        const { favorite } = await res.json();
+        setJobs(jobs.map((job) => (job.id === id ? { ...job, favorite } : job)));
+      }
+    } catch (error) {
+      console.error("Failed to toggle favorite:", error);
+    }
+  };
+
   const handleSort = (column: string) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -92,6 +107,29 @@ export default function DashboardPage() {
               Job Applications
             </h1>
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                className={`px-3 py-2 rounded-lg border transition-colors ${
+                  showFavoritesOnly
+                    ? "bg-yellow-100 border-yellow-400 text-yellow-700"
+                    : "border-gray-300 text-gray-500 hover:bg-gray-50"
+                }`}
+                title={showFavoritesOnly ? "Show all jobs" : "Show favorites only"}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill={showFavoritesOnly ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                  />
+                </svg>
+              </button>
               <div className="relative">
                 <input
                   type="text"
@@ -236,7 +274,9 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {jobs.map((job) => (
+                {jobs
+                  .filter((job) => !showFavoritesOnly || job.favorite)
+                  .map((job) => (
                   <tr key={job.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
@@ -292,7 +332,54 @@ export default function DashboardPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-2 items-center">
+                        <button
+                          onClick={() => handleToggleFavorite(job.id)}
+                          className={`transition-colors ${
+                            job.favorite
+                              ? "text-yellow-500 hover:text-yellow-600"
+                              : "text-gray-300 hover:text-yellow-400"
+                          }`}
+                          title={job.favorite ? "Remove from favorites" : "Add to favorites"}
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill={job.favorite ? "currentColor" : "none"}
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                            />
+                          </svg>
+                        </button>
+                        {job.interviewQA && (
+                          <button
+                            onClick={() => {
+                              setSelectedJobForQA(job);
+                              setExpandedQA(new Set());
+                            }}
+                            className="text-purple-500 hover:text-purple-700 transition-colors"
+                            title="View Interview Q&A"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                              />
+                            </svg>
+                          </button>
+                        )}
                         <Link
                           href={`/jobs/${job.id}`}
                           className="text-indigo-600 hover:text-indigo-900"
@@ -356,6 +443,122 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Interview Q&A Modal */}
+      {selectedJobForQA && (() => {
+        let qaList: InterviewQuestion[] = [];
+        try {
+          qaList = JSON.parse(selectedJobForQA.interviewQA || "[]");
+        } catch {
+          qaList = [];
+        }
+
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-purple-50">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Interview Q&A
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {selectedJobForQA.title} at {selectedJobForQA.company}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      if (expandedQA.size === qaList.length) {
+                        setExpandedQA(new Set());
+                      } else {
+                        setExpandedQA(new Set(qaList.map((_, i) => i)));
+                      }
+                    }}
+                    className="text-sm text-purple-600 hover:text-purple-800"
+                  >
+                    {expandedQA.size === qaList.length ? "Collapse All" : "Expand All"}
+                  </button>
+                  <button
+                    onClick={() => setSelectedJobForQA(null)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {qaList.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No interview questions available.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {qaList.map((qa, index) => (
+                      <div key={index} className="bg-purple-50 rounded-lg border border-purple-200 overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newExpanded = new Set(expandedQA);
+                            if (newExpanded.has(index)) {
+                              newExpanded.delete(index);
+                            } else {
+                              newExpanded.add(index);
+                            }
+                            setExpandedQA(newExpanded);
+                          }}
+                          className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-purple-100 transition-colors"
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <span className="px-2 py-0.5 bg-purple-200 text-purple-700 text-xs rounded-full font-medium whitespace-nowrap">
+                              {qa.skill}
+                            </span>
+                            <span className="text-gray-800 font-medium truncate">{qa.question}</span>
+                          </div>
+                          <svg
+                            className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 ${
+                              expandedQA.has(index) ? "rotate-180" : ""
+                            }`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        {expandedQA.has(index) && (
+                          <div className="px-4 pb-4 border-t border-purple-200">
+                            <div className="mt-3">
+                              <h4 className="text-sm font-semibold text-purple-800 mb-2">Answer:</h4>
+                              <p className="text-gray-700 text-sm whitespace-pre-wrap">{qa.answer}</p>
+                            </div>
+                            <div className="mt-4">
+                              <h4 className="text-sm font-semibold text-purple-800 mb-2">Example Story (STAR Format):</h4>
+                              <p className="text-gray-700 text-sm whitespace-pre-wrap bg-white p-3 rounded-lg">{qa.storyExample}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end">
+                <button
+                  onClick={() => setSelectedJobForQA(null)}
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

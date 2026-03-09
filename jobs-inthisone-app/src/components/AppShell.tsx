@@ -15,17 +15,24 @@ interface AppShellProps {
 }
 
 const ONBOARDING_SEEN_KEY = "onboarding_seen";
+const RESUME_TOOLTIP_DISMISSED_KEY = "resume_tooltip_dismissed";
 
 export default function AppShell({ user, children }: AppShellProps) {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isFirstVisit, setIsFirstVisit] = useState(false);
+  const [showResumeTooltip, setShowResumeTooltip] = useState(false);
 
   useEffect(() => {
     // Check if user has seen the onboarding
     const hasSeenOnboarding = localStorage.getItem(ONBOARDING_SEEN_KEY);
+    const hasResumeTooltipDismissed = localStorage.getItem(RESUME_TOOLTIP_DISMISSED_KEY);
+
     if (!hasSeenOnboarding) {
       setIsFirstVisit(true);
       setShowOnboarding(true);
+    } else if (!hasResumeTooltipDismissed) {
+      // If onboarding was seen but tooltip wasn't dismissed, show tooltip
+      setShowResumeTooltip(true);
     }
   }, []);
 
@@ -34,6 +41,11 @@ export default function AppShell({ user, children }: AppShellProps) {
     if (isFirstVisit) {
       localStorage.setItem(ONBOARDING_SEEN_KEY, "true");
       setIsFirstVisit(false);
+      // Show the resume tooltip after closing onboarding for the first time
+      const hasResumeTooltipDismissed = localStorage.getItem(RESUME_TOOLTIP_DISMISSED_KEY);
+      if (!hasResumeTooltipDismissed) {
+        setShowResumeTooltip(true);
+      }
     }
   };
 
@@ -41,9 +53,19 @@ export default function AppShell({ user, children }: AppShellProps) {
     setShowOnboarding(true);
   };
 
+  const handleDismissResumeTooltip = () => {
+    setShowResumeTooltip(false);
+    localStorage.setItem(RESUME_TOOLTIP_DISMISSED_KEY, "true");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar user={user} onHelpClick={handleOpenOnboarding} />
+      <Navbar
+        user={user}
+        onHelpClick={handleOpenOnboarding}
+        showResumeTooltip={showResumeTooltip}
+        onDismissResumeTooltip={handleDismissResumeTooltip}
+      />
       <main className="w-full max-w-[1600px] mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {children}
       </main>
