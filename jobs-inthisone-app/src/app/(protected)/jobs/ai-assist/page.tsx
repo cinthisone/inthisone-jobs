@@ -1,9 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Resume, InterviewQuestion } from "@/lib/types";
+
+interface DuplicateJob {
+  id: string;
+  title: string;
+  company: string;
+  applyDate: string | null;
+  createdAt: string;
+}
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
@@ -30,6 +39,7 @@ export default function AIAssistPage() {
   const [whyCompanyAnswers, setWhyCompanyAnswers] = useState("");
   const [interviewQA, setInterviewQA] = useState<InterviewQuestion[]>([]);
   const [expandedQA, setExpandedQA] = useState<Set<number>>(new Set());
+  const [duplicateJobs, setDuplicateJobs] = useState<DuplicateJob[]>([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -125,6 +135,24 @@ export default function AIAssistPage() {
       setFitAnalysis(fitData);
       setWhyCompanyAnswers(whyData);
       setInterviewQA(qaData);
+
+      if (data.title && data.company) {
+        try {
+          const dupRes = await fetch(
+            `/api/jobs/check-duplicate?company=${encodeURIComponent(data.company)}&title=${encodeURIComponent(data.title)}`
+          );
+          if (dupRes.ok) {
+            const { duplicates } = await dupRes.json();
+            if (duplicates?.length) {
+              setDuplicateJobs(duplicates);
+              return;
+            }
+          }
+        } catch (dupErr) {
+          console.error("Duplicate check failed:", dupErr);
+        }
+      }
+
       setIsParsed(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -210,6 +238,69 @@ export default function AIAssistPage() {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
+      {duplicateJobs.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900">Possible duplicate application</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  You&apos;ve already submitted an application for{" "}
+                  <span className="font-medium text-gray-900">{formData.title}</span> at{" "}
+                  <span className="font-medium text-gray-900">{formData.company}</span>.
+                </p>
+              </div>
+            </div>
+
+            <ul className="border border-gray-200 rounded-md divide-y divide-gray-200 mb-5 max-h-48 overflow-y-auto">
+              {duplicateJobs.map((dup) => (
+                <li key={dup.id} className="px-4 py-3 flex items-center justify-between">
+                  <div className="text-sm">
+                    <div className="font-medium text-gray-900">{dup.title}</div>
+                    <div className="text-gray-500">
+                      Applied {dup.applyDate ? new Date(dup.applyDate).toLocaleDateString() : new Date(dup.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <Link
+                    href={`/jobs/${dup.id}`}
+                    className="text-sm text-indigo-600 hover:text-indigo-800"
+                  >
+                    View
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.reload();
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDuplicateJobs([]);
+                  setIsParsed(true);
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
+              >
+                Continue Anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <h1 className="text-2xl font-semibold text-gray-900 mb-6">
         AI-Assisted Job Entry
       </h1>
